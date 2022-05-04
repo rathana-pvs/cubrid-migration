@@ -258,17 +258,28 @@ public class BaseConfirmationPage extends MigrationWizardPage {
 				continue;
 			}
 			Table tarTbl = cfg.getTargetTableSchema(setc.getTarget());
-			if (tarTbl.getComment() == null || tarTbl.getComment() != setc.getComment()) {
-				tarTbl.setComment(setc.getComment());
-			}
-			for (Column tarCol : tarTbl.getColumns()) {
-				SourceColumnConfig sourceCol = setc.getColumnConfig(tarCol.getName().toUpperCase());
-				if (tarCol.getComment() == null || sourceCol.getComment() != tarCol.getComment()){
-					tarCol.setComment(sourceCol.getComment());
-				}
-			}
 			if (tarTbl == null || tables.contains(tarTbl)) {
 				continue;
+			}
+
+			if (setc != null && setc.getComment() != null) {
+				if (tarTbl.getComment() == null || tarTbl.getComment() != setc.getComment()) {
+					tarTbl.setComment(setc.getComment());
+				}
+			} else {
+				tarTbl.setComment(null);
+			}
+			for (Column tarCol : tarTbl.getColumns()) {
+				SourceColumnConfig sourceCol = setc.getColumnConfigIgnoreCase(tarCol.getName());
+				if (sourceCol != null && tarCol != null){
+					if (sourceCol.getComment() != null) {
+						if (tarCol.getComment() == null || tarCol.getComment() != sourceCol.getComment()){
+							tarCol.setComment(sourceCol.getComment());
+						}
+					} else {
+						tarCol.setComment(null);
+					}
+				}
 			}
 			tables.add(tarTbl);
 			String sql = ddlUtils.getTableDDL(tarTbl);
