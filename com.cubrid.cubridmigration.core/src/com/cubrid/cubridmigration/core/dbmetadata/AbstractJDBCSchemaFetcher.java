@@ -1040,7 +1040,7 @@ public abstract class AbstractJDBCSchemaFetcher implements
 				try{
 					dataType = rs.getInt("DATA_TYPE");
 				}catch(SQLException e){
-					/* MariaDB has problem with getInt with DATA_TYPE, so use getString then conver to Integer */
+					/* MariaDB has problem with getInt with DATA_TYPE, so use getString then convert it to Integer */
 					dataType = Integer.parseInt(rs.getString("DATA_TYPE"));
 				}
 				
