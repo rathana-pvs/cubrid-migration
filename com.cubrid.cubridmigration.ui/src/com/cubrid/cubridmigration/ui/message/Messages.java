@@ -145,6 +145,8 @@ public class Messages extends
 	public static String btnSrcOnlineMySQLDBDes;
 	public static String btnSrcOnlineOracleDB;
 	public static String btnSrcOnlineOracleDBDes;
+	public static String btnSrcOnlineMariaDBDBDes;
+	public static String btnSrcOnlineMariaDBDB;
 	public static String btnSrcSQLFiles;
 	public static String btnSrcSQLFilesDes;
 	public static String btnSSHProxySettings;
@@ -605,6 +607,7 @@ public class Messages extends
 	public static String msgWarnTableRecreated;
 	public static String msgWizardStep;
 	public static String mysqlToCubrid;
+	public static String mariadbToCubrid;
 	public static String newButtonLabel;
 	public static String newDBConnDialogMessage;
 	public static String newDBConnDialogTitle;

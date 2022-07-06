@@ -1036,7 +1036,14 @@ public abstract class AbstractJDBCSchemaFetcher implements
 			// Retrieve type info from the result set
 			while (rs.next()) {
 				String typeName = rs.getString("TYPE_NAME");
-				Integer dataType = rs.getInt("DATA_TYPE");
+				Integer dataType;
+				try{
+					dataType = rs.getInt("DATA_TYPE");
+				}catch(SQLException e){
+					/* MariaDB has problem with getInt with DATA_TYPE, so use getString then conver to Integer */
+					dataType = Integer.parseInt(rs.getString("DATA_TYPE"));
+				}
+				
 				Long precision = rs.getLong("PRECISION");
 				String prefix = rs.getString("LITERAL_PREFIX");
 				String suffix = rs.getString("LITERAL_SUFFIX");

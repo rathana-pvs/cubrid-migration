@@ -105,6 +105,7 @@ public class MigrationWizard extends
 		supportedDBs.add(DatabaseType.ORACLE.getID());
 		supportedDBs.add(DatabaseType.CUBRID.getID());
 		supportedDBs.add(DatabaseType.MSSQL.getID());
+		supportedDBs.add(DatabaseType.MARIADB.getID());
 		return supportedDBs;
 	}
 

@@ -75,6 +75,7 @@ public class SelectSrcTarTypesView {
 	private Button btnOnlineOracleSrc;
 	private Button btnOnlineMYSQLSrc;
 	private Button btnOnlineMSSQLSrc;
+	private Button btnOnlineMariaDBSrc;
 
 	private Button btnDumpSrc;
 	private Button btnSQLSrc;
@@ -113,6 +114,13 @@ public class SelectSrcTarTypesView {
 				Messages.btnSrcOnlineMSSQLDBDes);
 		btnOnlineMSSQLSrc.setData(MigrationConfiguration.SOURCE_TYPE_MSSQL);
 		srcButtons.add(btnOnlineMSSQLSrc);
+
+		/*add new button for mariadb*/
+		btnOnlineMariaDBSrc = createSrcTarTypeBtn(grpSrc, Messages.btnSrcOnlineMariaDBDB,
+				Messages.btnSrcOnlineMariaDBDBDes);
+		btnOnlineMariaDBSrc.setData(MigrationConfiguration.SOURCE_TYPE_MARIADB);
+		srcButtons.add(btnOnlineMariaDBSrc);
+		
 		Label comSep = new Label(grpSrc, SWT.SEPARATOR | SWT.HORIZONTAL);
 		{
 			GridData gd = new GridData(SWT.FILL, SWT.NONE, true, false);
