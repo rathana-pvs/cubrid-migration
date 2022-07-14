@@ -1,4 +1,4 @@
-[{
+{
 name:cmt_maria,
 schemas:[
 	{name:cmt_maria,
@@ -1542,6 +1542,6 @@ schemas:[
 	views:[
 		{name:comvnusermaster,sql:CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`127.0.0.1` SQL SECURITY DEFINER VIEW `comvnusermaster` AS select `tb_tz_gnrlmber`.`ESNTL_ID` AS `ESNTL_ID`,`tb_tz_gnrlmber`.`MBER_ID` AS `USER_ID`,`tb_tz_gnrlmber`.`PASSWORD` AS `PASSWORD`,`tb_tz_gnrlmber`.`MBER_NM` AS `USER_NM`,`tb_tz_gnrlmber`.`ZIP` AS `USER_ZIP`,`tb_tz_gnrlmber`.`ADRES` AS `USER_ADRES`,`tb_tz_gnrlmber`.`MBER_EMAIL_ADRES` AS `USER_EMAIL`,' ' AS `GROUP_ID`,'GNR' AS `USER_SE`,' ' AS `ORGNZT_ID` from `tb_tz_gnrlmber` order by `tb_tz_gnrlmber`.`ESNTL_ID`}],
 	serials:[],
-	procedures:[],
+	procedures:[get_est_data_table],
 	functions:[]}
-]}]
+]}
