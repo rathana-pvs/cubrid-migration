@@ -52,8 +52,8 @@ import com.cubrid.cubridmigration.ui.message.Messages;
  * 
  * Type mapping preference page
  * 
- * @author pangqiren
- * @version 1.0 - 2009-12-21 created by pangqiren
+ * @author Rathana
+ * 
  */
 public class MariaDBToCUBRIDTypeMapPage extends
 		PreferencePage implements

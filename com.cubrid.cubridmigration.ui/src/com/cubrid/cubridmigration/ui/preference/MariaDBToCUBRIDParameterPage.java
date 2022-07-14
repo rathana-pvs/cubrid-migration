@@ -66,10 +66,10 @@ import com.cubrid.cubridmigration.ui.message.Messages;
 
 /**
  * 
- * MySQLToCUBRID parameter preference page
+ * MariadbToCUBRID parameter preference page
  * 
- * @author moulinwang
- * @version 1.0 - 2010-12-14 created by moulinwang
+ * @author Rathana
+ * 
  */
 public class MariaDBToCUBRIDParameterPage extends
 		PreferencePage implements
@@ -361,7 +361,7 @@ public class MariaDBToCUBRIDParameterPage extends
 		int secondColumnWidth = 173;
 
 		Group grpUnparseTime = new Group(compsite, SWT.NONE);
-		grpUnparseTime.setText(Messages.infoGrpUnparsedTime);
+		grpUnparseTime.setText(Messages.infoMariaDBGrpUnparsedTime);
 		grpUnparseTime.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		grpUnparseTime.setLayout(new GridLayout(4, false));
 
@@ -431,7 +431,7 @@ public class MariaDBToCUBRIDParameterPage extends
 		Group grpDate0Convert = new Group(compsite, SWT.NONE);
 		grpDate0Convert.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-		grpDate0Convert.setText(Messages.infoGrpUnparsedDate);
+		grpDate0Convert.setText(Messages.infoMariaDBGrpUnparsedDate);
 		grpDate0Convert.setLayout(new GridLayout(4, false));
 
 		btnDate0Null = new Button(grpDate0Convert, SWT.RADIO);
@@ -494,7 +494,7 @@ public class MariaDBToCUBRIDParameterPage extends
 
 		Group grpUnparseTimeStamp = new Group(compsite, SWT.NONE);
 		grpUnparseTimeStamp.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		grpUnparseTimeStamp.setText(Messages.infoGrpUnparsedTimestamp);
+		grpUnparseTimeStamp.setText(Messages.infoMariaDBGrpUnparsedTimestamp);
 		grpUnparseTimeStamp.setLayout(new GridLayout(4, false));
 
 		btnTimeStampNull = new Button(grpUnparseTimeStamp, SWT.RADIO);
@@ -556,7 +556,7 @@ public class MariaDBToCUBRIDParameterPage extends
 		Group grpChar0Convert = new Group(compsite, SWT.NONE);
 		grpChar0Convert.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-		grpChar0Convert.setText(Messages.infoGrpUnparsedChar);
+		grpChar0Convert.setText(Messages.infoMariaDBGrpUnparsedChar);
 		grpChar0Convert.setLayout(new GridLayout(4, false));
 
 		btnChar0Space = new Button(grpChar0Convert, SWT.RADIO);
