@@ -28,12 +28,7 @@
  *
  */
 package com.cubrid.cubridmigration.mariadb.meta;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -61,9 +56,7 @@ import com.cubrid.cubridmigration.mariadb.export.MariaDBExportHelper;
  * 
  * DbUtilTest
  * 
- * @author moulinwang
- * @author JessieHuang
- * @version 1.0 - 2009-9-18
+ * @author Rathana
  */
 public class MariaDBSchemaFetcherTest {
 
@@ -93,8 +86,6 @@ public class MariaDBSchemaFetcherTest {
 
 	/**
 	 * testBuildProcedures
-	 * 
-	 * @e
 	 * @throws SQLException e
 	 */
 	@Test
@@ -363,10 +354,9 @@ public class MariaDBSchemaFetcherTest {
 	 * @throws IOException e
 	 * @throws SQLException e
 	 */
-//	@Test
-	public final void testGetValue() throws CloneNotSupportedException,
-			IOException,
-			SQLException {
+	@Test
+	public final void testGetValue() throws CloneNotSupportedException, IOException,
+	SQLException {
 		Connection conn = TestUtil2.getMariaDBConn();
 		MariaDBExportHelper mariaDBExportHelper = new MariaDBExportHelper();
 
