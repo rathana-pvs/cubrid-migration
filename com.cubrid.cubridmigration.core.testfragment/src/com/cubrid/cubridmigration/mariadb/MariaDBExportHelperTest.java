@@ -31,8 +31,7 @@ package com.cubrid.cubridmigration.mariadb;
 
 import java.util.Locale;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
