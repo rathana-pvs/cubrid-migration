@@ -46,8 +46,8 @@ import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.core.export.IExportDataHandler;
 import com.cubrid.cubridmigration.core.export.handler.DateTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.NumberTypeHandler;
-import com.cubrid.cubridmigration.core.export.handler.TimeTypeHandler;
-import com.cubrid.cubridmigration.core.export.handler.TimestampTypeHandler;
+import com.cubrid.cubridmigration.mariadb.export.handler.MariaDBDateTypeHandler;
+import com.cubrid.cubridmigration.mariadb.export.handler.MariaDBTimestampTypeHandler;
 import com.cubrid.cubridmigration.mariadb.export.handler.MariaDBYearTypeHandler;
 
 
@@ -69,10 +69,10 @@ public class MariaDBExportHelper extends
 		super();
 		handlerMap2.put("YEAR", new MariaDBYearTypeHandler());
 		handlerMap2.put("BIGINT UNSIGNED", new NumberTypeHandler());
-		handlerMap2.put("DATE", new DateTypeHandler());
-		handlerMap2.put("TIME", new TimeTypeHandler());
-		handlerMap2.put("TIMESTAMP", new TimestampTypeHandler());
-		handlerMap2.put("DATETIME", new TimestampTypeHandler());
+		handlerMap2.put("DATE", new MariaDBDateTypeHandler());
+		handlerMap2.put("TIME", new  MariaDBTimestampTypeHandler());
+		handlerMap2.put("TIMESTAMP", new MariaDBTimestampTypeHandler());
+		handlerMap2.put("DATETIME", new  MariaDBTimestampTypeHandler());
 	}
 
 	/**

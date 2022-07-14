@@ -66,6 +66,7 @@ public class TestUtil2 {
 	private static final JdbcConfig MYSQL = new JdbcConfig();
 	private static final JdbcConfig ORACLE = new JdbcConfig();
 	private static final JdbcConfig MSSQL = new JdbcConfig();
+	private static final JdbcConfig MARIADB = new JdbcConfig();
 	private static Properties JDBC_CONFIG = new Properties();
 	static {
 		try {
@@ -99,6 +100,14 @@ public class TestUtil2 {
 			MSSQL.port = Integer.valueOf(JDBC_CONFIG.getProperty("MSSQL.port"));
 			MSSQL.username = JDBC_CONFIG.getProperty("MSSQL.username");
 			MSSQL.password = JDBC_CONFIG.getProperty("MSSQL.password");
+			
+			MARIADB.driverFile = JDBC_CONFIG.getProperty("MARIADB.driverFile");
+			MARIADB.host = JDBC_CONFIG.getProperty("MARIADB.host");
+			MARIADB.database = JDBC_CONFIG.getProperty("MARIADB.database");
+			MARIADB.port = Integer.valueOf(JDBC_CONFIG.getProperty("MARIADB.port"));
+			MARIADB.username = JDBC_CONFIG.getProperty("MARIADB.username");
+			MARIADB.password = JDBC_CONFIG.getProperty("MARIADB.password");
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -129,6 +138,24 @@ public class TestUtil2 {
 	@Test
 	public void testGetJDBCPath() {
 		getJdbcPath();
+	}
+	
+	/**
+	 * get a Connection of MariaDB
+	 * 
+	 * @return Connection
+	 * @throws MigrationException e
+	 * @throws SQLException e
+	 */
+	public static Connection getMariaDBConn() throws SQLException {
+		ConnParameters params = getMariaDBConParam();
+		return params.createConnection();
+	}
+	public static ConnParameters getMariaDBConParam() {
+		ConnParameters params = ConnParameters.getConParam("mariadbconnection", MARIADB.host,
+				MARIADB.port, MARIADB.database, DatabaseType.MARIADB, "", MARIADB.username, MARIADB.password,
+				MARIADB.driverFile, null);
+		return params;
 	}
 
 	/**
