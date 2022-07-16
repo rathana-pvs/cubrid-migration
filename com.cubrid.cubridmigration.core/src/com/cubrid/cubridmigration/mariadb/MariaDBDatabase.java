@@ -46,6 +46,7 @@ import com.cubrid.cubridmigration.mariadb.export.MariaDBExportHelper;
 import com.cubrid.cubridmigration.mariadb.meta.MariaDBSchemaFetcher;
 
 
+
 /**
  * MariaDB Database Description
  * 
@@ -112,6 +113,7 @@ public class MariaDBDatabase extends
 		public Connection createConnection(ConnParameters conParam) throws SQLException {
 			try {
 				Driver driver = conParam.getDriver();
+
 				if (driver == null) {
 					throw new RuntimeException("JDBC driver can't be null.");
 				}
