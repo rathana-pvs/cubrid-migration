@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search Solution. 
+ * Copyright (c) 2016 CUBRID Corporation.
  *
  * Redistribution and use in source and binary forms, with or without modification, 
  * are permitted provided that the following conditions are met: 
@@ -40,53 +40,6 @@ import com.cubrid.cubridmigration.mariadb.export.MariaDBExportHelper;
 
 public class MariaDBExportHelperTest {
 
-	//	@Test
-	//	public void testIsWhereNeeded() {
-	//		String whereCnd = "limit 0";
-	//		boolean isNeeded = new MariaDBExportHelper().isWhereNeeded(whereCnd);
-	//		Assert.assertEquals(false, isNeeded);
-	//
-	//		whereCnd = "where 1=1";
-	//		isNeeded = new MariaDBExportHelper().isWhereNeeded(whereCnd);
-	//		Assert.assertEquals(false, isNeeded);
-	//
-	//		whereCnd = "for 1=1";
-	//		isNeeded = new MariaDBExportHelper().isWhereNeeded(whereCnd);
-	//		Assert.assertEquals(false, isNeeded);
-	//
-	//		whereCnd = "having 1=1";
-	//		isNeeded = new MariaDBExportHelper().isWhereNeeded(whereCnd);
-	//		Assert.assertEquals(false, isNeeded);
-	//
-	//		whereCnd = "group by";
-	//		isNeeded = new MariaDBExportHelper().isWhereNeeded(whereCnd);
-	//		Assert.assertEquals(false, isNeeded);
-	//
-	//		whereCnd = "order by";
-	//		isNeeded = new MariaDBExportHelper().isWhereNeeded(whereCnd);
-	//		Assert.assertEquals(false, isNeeded);
-	//
-	//		whereCnd = "PROCEDURE 1-2";
-	//		isNeeded = new MariaDBExportHelper().isWhereNeeded(whereCnd);
-	//		Assert.assertEquals(false, isNeeded);
-	//
-	//		whereCnd = "1=1 ";
-	//		isNeeded = new MariaDBExportHelper().isWhereNeeded(whereCnd);
-	//		Assert.assertEquals(true, isNeeded);
-	//	}
-
-	@Test
-	public void testGetAppendLimit0() {
-		//String sql = "select * from test limit 100;";
-		//String expected = "select * from test LIMIT 1";
-		//String returnSql = new MariaDBExportHelper().getTestSelectSQL(sql);
-		//Assert.assertEquals(expected, returnSql);
-
-		//sql = "select * from test";
-		//expected = "select * from test LIMIT 1";
-		//returnSql = new MariaDBExportHelper().getTestSelectSQL(sql);
-		//Assert.assertEquals(expected, returnSql);
-	}
 
 	@Test
 	public void testMatchMariaDBLimit() {
