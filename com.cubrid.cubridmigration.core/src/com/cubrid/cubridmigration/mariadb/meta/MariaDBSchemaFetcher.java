@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search Solution. 
+ * Copyright (c) 2016 CUBRID Corporation.
  *
  * Redistribution and use in source and binary forms, with or without modification, 
  * are permitted provided that the following conditions are met: 
@@ -27,7 +27,7 @@
  * OF SUCH DAMAGE. 
  *
  */
-package com.cubrid.cubridmigration.mysql.meta;
+package com.cubrid.cubridmigration.mariadb.meta;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -75,20 +75,20 @@ import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
-import com.cubrid.cubridmigration.mysql.MySQLDataTypeHelper;
-import com.cubrid.cubridmigration.mysql.dbobj.MySQLTrigger;
+import com.cubrid.cubridmigration.mariadb.MariaDBDataTypeHelper;
+import com.cubrid.cubridmigration.mariadb.dbobj.MariaDBTrigger;
+
 
 /**
  * 
- * ReverseEngineeringMysqlJdbc
+ * ReverseEngineeringMariaDBJdbc
  * 
- * @author moulinwang
- * @author Jessie Huang
- * @version 1.0 - 2009-9-15
+ * @author Rathana
+ * @version 1.0 - 2022-6-29 created by Rathana
  */
-public final class MySQLSchemaFetcher extends
+public final class MariaDBSchemaFetcher extends
 		AbstractJDBCSchemaFetcher {
-	private final static Logger LOG = LogUtil.getLogger(MySQLSchemaFetcher.class);
+	private final static Logger LOG = LogUtil.getLogger(MariaDBSchemaFetcher.class);
 
 	private static final String SHOW_AUTOINCREMENT_MAXVAL = "SHOW TABLE STATUS LIKE ?";
 	private static final String SHOW_CHARSET = "show VARIABLES LIKE 'character_set_database'";
@@ -132,11 +132,11 @@ public final class MySQLSchemaFetcher extends
 		}
 	}
 
-	public MySQLSchemaFetcher() {
+	public MariaDBSchemaFetcher() {
 		factory = new DBObjectFactory() {
 
 			public Trigger createTrigger() {
-				return new MySQLTrigger();
+				return new MariaDBTrigger();
 			}
 
 		};
@@ -220,7 +220,7 @@ public final class MySQLSchemaFetcher extends
 
 		final String charset = getCharSetByDBVariables(conn);
 		catalog.setCharset(charset);
-		catalog.setDatabaseType(DatabaseType.MYSQL);
+		catalog.setDatabaseType(DatabaseType.MARIADB);
 
 		final String dbDDL = getDBDDL(conn, catalog.getName());
 		catalog.setCreateSql(dbDDL);
@@ -231,9 +231,9 @@ public final class MySQLSchemaFetcher extends
 			// get tables
 			final List<Table> tableList = schema.getTables();
 
-//			for (Table table : tableList) {
-//				table.setDDL(getTableDDL(conn, table.getName()));
-//			}
+			for (Table table : tableList) {
+				table.setDDL(getTableDDL(conn, table.getName()));
+			}
 
 			// get views
 			final List<View> viewList = schema.getViews();
@@ -272,7 +272,7 @@ public final class MySQLSchemaFetcher extends
 	//	}
 
 	/**
-	 * build Partitions MySQL 5.1 support Partition
+	 * build Partitions MariadB support Partition
 	 * 
 	 * @param conn Connection
 	 * @param catalog Catalog
@@ -397,7 +397,7 @@ public final class MySQLSchemaFetcher extends
 	public Table buildSQLTable(ResultSetMetaData resultSetMeta) throws SQLException {
 		Table sourceTable = super.buildSQLTable(resultSetMeta);
 		List<Column> columns = sourceTable.getColumns();
-		MySQLDataTypeHelper dtHelper = MySQLDataTypeHelper.getInstance(null);
+		MariaDBDataTypeHelper dtHelper = MariaDBDataTypeHelper.getInstance(null);
 		for (Column column : columns) {
 			if (isNULLType(column.getDataType())) {
 				column.setDataType("varchar");
@@ -444,7 +444,7 @@ public final class MySQLSchemaFetcher extends
 		try {
 			stmt = conn.prepareStatement(sqlStr);
 			rs = stmt.executeQuery();
-			MySQLDataTypeHelper dtHelper = MySQLDataTypeHelper.getInstance(null);
+			MariaDBDataTypeHelper dtHelper = MariaDBDataTypeHelper.getInstance(null);
 			while (rs.next()) {
 				final String columnName = rs.getString("FIELD");
 				final String columnType = rs.getString("TYPE");
@@ -500,7 +500,7 @@ public final class MySQLSchemaFetcher extends
 
 		final List<Column> list = table.getColumns();
 
-		//In mysql ,the JDBC driver will recongnize the tinyint(1) as bit(1)
+		//In MariadB ,the JDBC driver will recongnize the tinyint(1) as bit(1)
 		for (Column column : list) {
 			if ("BIT".equalsIgnoreCase(column.getDataType())) {
 				if (column.getShownDataType().startsWith("bit")) {
@@ -708,7 +708,7 @@ public final class MySQLSchemaFetcher extends
 			final List<Trigger> trigs = new ArrayList<Trigger>();
 
 			while (rs.next()) {
-				final MySQLTrigger trig = (MySQLTrigger) factory.createTrigger();
+				final MariaDBTrigger trig = (MariaDBTrigger) factory.createTrigger();
 				trig.setName(rs.getString("TRIGGER_NAME"));
 				trig.setEventManipulation(rs.getString("EVENT_MANIPULATION"));
 				trig.setEventTable(rs.getString("EVENT_OBJECT_TABLE"));
@@ -812,7 +812,7 @@ public final class MySQLSchemaFetcher extends
 
 			return ddl;
 		} catch (SQLException ex) {
-			LOG.error("Get MySQL Database DDL error.", ex);
+			LOG.error("Get MariaDB Database DDL error.", ex);
 			return "";
 		} finally {
 			Closer.close(rs);
@@ -821,7 +821,7 @@ public final class MySQLSchemaFetcher extends
 	}
 
 	protected DBExportHelper getExportHelper() {
-		return DatabaseType.MYSQL.getExportHelper();
+		return DatabaseType.MARIADB.getExportHelper();
 	}
 
 	/**
@@ -885,11 +885,11 @@ public final class MySQLSchemaFetcher extends
 	/**
 	 * return database object name
 	 * 
-	 * @param mysqlObjectName String
+	 * @param MariadBObjectName String
 	 * @return String
 	 */
-	private String getQuoteStr(String mysqlObjectName) {
-		return "`" + mysqlObjectName + "`";
+	private String getQuoteStr(String MariadBObjectName) {
+		return "`" + MariadBObjectName + "`";
 	}
 
 	/**
@@ -1019,13 +1019,13 @@ public final class MySQLSchemaFetcher extends
 		int tzOffset = 0;
 		try {
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT EXTRACT(HOUR FROM TIMEDIFF(NOW() ,UTC_TIMESTAMP())) AS OFFSET");
+			rs = stmt.executeQuery("SELECT EXTRACT(HOUR FROM TIMEDIFF(NOW() ,UTC_TIMESTAMP())) AS TIMEZONE");
 
 			if (rs.next()) {
-				tzOffset = rs.getInt("OFFSET");
+				tzOffset = rs.getInt("TIMEZONE");
 			}
 		} catch (Exception e) {
-			LOG.error("Get MySQL timezone error", e);
+			LOG.error("Get MariaDB timezone error", e);
 			tzOffset = Calendar.getInstance().getTimeZone().getRawOffset();
 		} finally {
 			Closer.close(rs);
@@ -1035,7 +1035,7 @@ public final class MySQLSchemaFetcher extends
 		try {
 			return TimeZoneUtils.getTZFromOffset(tzOffset);
 		} catch (Exception e) {
-			LOG.error("Get MySQL timezone error", e);
+			LOG.error("Get MariDB timezone error", e);
 		}
 		return "";
 	}
@@ -1073,9 +1073,9 @@ public final class MySQLSchemaFetcher extends
 	}
 
 	/**
-	 * Only mysql 5.1 or later version can support table partitions
+	 * Only MariadB 5.1 or later version can support table partitions
 	 * 
-	 * @param version of Mysql
+	 * @param version of MariadB
 	 * @return true if support.
 	 */
 	protected boolean isSupportParitionVersion(Version version) {
@@ -1088,7 +1088,7 @@ public final class MySQLSchemaFetcher extends
 	 * @return DatabaseType
 	 */
 	public DatabaseType getDBType() {
-		return DatabaseType.MYSQL;
+		return DatabaseType.MARIADB;
 	}
 
 	//	/**

@@ -105,6 +105,7 @@ public class MigrationConfiguration {
 	public static final int SOURCE_TYPE_MYSQL = DatabaseType.MYSQL.getID();
 	public static final int SOURCE_TYPE_ORACLE = DatabaseType.ORACLE.getID();
 	public static final int SOURCE_TYPE_MSSQL = DatabaseType.MSSQL.getID();
+	public static final int SOURCE_TYPE_INFORMIX = DatabaseType.INFORMIX.getID();
 
 	public static final int SOURCE_TYPE_XML_1 = 101;
 	public static final int SOURCE_TYPE_SQL = 102;
@@ -2315,21 +2316,28 @@ public class MigrationConfiguration {
 		if (srcCatalog.getSchemas().isEmpty()) {
 			return null;
 		}
-		final Schema sc;
-		if (schema == null) {
-			//retrieves default schema.
-			sc = srcCatalog.getSchemas().get(0);
-		} else {
-			sc = srcCatalog.getSchemaByName(schema);
+
+//		final Schema sc;
+//		if (schema == null) {
+//			//retrieves default schema.
+//			sc = srcCatalog.getSchemas().get(0);
+//		} else {
+//			sc = srcCatalog.getSchemaByName(schema);
+//		}
+//		if (sc == null) {
+//			return null;
+//		}
+//		Table table = sc.getTableByName(name);
+//		if (table == null) {
+//			table = getSrcSQLSchema(name);
+//		}
+		for (Schema sc : srcCatalog.getSchemas()){
+			Table table = sc.getTableByName(name);
+			if(table != null) {
+				return table;
+			}
 		}
-		if (sc == null) {
-			return null;
-		}
-		Table table = sc.getTableByName(name);
-		if (table == null) {
-			table = getSrcSQLSchema(name);
-		}
-		return table;
+		return null;
 	}
 
 	/**
@@ -3428,7 +3436,8 @@ public class MigrationConfiguration {
 	 */
 	public boolean sourceIsOnline() {
 		return (sourceType == SOURCE_TYPE_CUBRID) || (sourceType == SOURCE_TYPE_MYSQL)
-				|| (sourceType == SOURCE_TYPE_ORACLE) || (sourceType == SOURCE_TYPE_MSSQL);
+				|| (sourceType == SOURCE_TYPE_ORACLE) || (sourceType == SOURCE_TYPE_MSSQL)
+				|| (sourceType == SOURCE_TYPE_INFORMIX);
 	}
 
 	/**

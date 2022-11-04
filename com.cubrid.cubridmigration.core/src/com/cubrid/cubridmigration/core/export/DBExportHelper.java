@@ -142,6 +142,7 @@ public abstract class DBExportHelper implements
 			if (edh == null) {
 				return rs.getObject(column.getName());
 			}
+			Object obj = edh.getJdbcObject(rs, column);
 			return edh.getJdbcObject(rs, column);
 		}
 		LOG.error("Unknown SQL data type:" + column.getDataType() + "(Column name="
