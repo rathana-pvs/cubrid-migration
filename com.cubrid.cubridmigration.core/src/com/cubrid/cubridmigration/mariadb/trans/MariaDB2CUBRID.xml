@@ -1,5 +1,5 @@
 <MARIADB2CUBRID>
-	<DataTypeMapping>
+<DataTypeMapping>
 		<SourceDataType>
 			<type>bit</type>
 			<precision>1</precision>
@@ -61,34 +61,6 @@
 	<DataTypeMapping>
 		<SourceDataType>
 			<type>tinyint unsigned</type>
-			<precision></precision>
-			<scale></scale>
-		</SourceDataType>
-		<TargetDataType>
-			<type>short</type>
-			<precision></precision>
-			<scale></scale>
-		</TargetDataType>
-		<TargetDataType>
-			<type>int</type>
-			<precision></precision>
-			<scale></scale>
-		</TargetDataType>
-		<TargetDataType>
-			<type>numeric</type>
-			<precision>3</precision>
-			<scale></scale>
-		</TargetDataType>
-		<TargetDataType>
-			<type>varchar</type>
-			<precision>3</precision>
-			<scale></scale>
-		</TargetDataType>
-	</DataTypeMapping>
-
-	<DataTypeMapping>
-		<SourceDataType>
-			<type>tinyint unsigned zerofill</type>
 			<precision></precision>
 			<scale></scale>
 		</SourceDataType>

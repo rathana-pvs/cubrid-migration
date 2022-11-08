@@ -88,7 +88,7 @@ public class MariaDBExportHelper extends
 	 * @throws SQLException e
 	 */
 	public Object getJdbcObject(final ResultSet rs, final Column column) throws SQLException {
-		IExportDataHandler edh = handlerMap2.get(column.getDataType());
+		IExportDataHandler edh = handlerMap2.get(column.getDataType().toUpperCase());
 		if (edh != null) {
 			return edh.getJdbcObject(rs, column);
 		}

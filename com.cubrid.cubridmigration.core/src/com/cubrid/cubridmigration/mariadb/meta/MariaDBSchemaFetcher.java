@@ -30,6 +30,7 @@
 package com.cubrid.cubridmigration.mariadb.meta;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
 import java.sql.PreparedStatement;
@@ -98,7 +99,7 @@ public final class MariaDBSchemaFetcher extends
 	private static final String SHOW_PROCEDURE = "SHOW CREATE PROCEDURE ";
 	private static final String SHOW_TABLE = "SHOW CREATE TABLE ";
 	private static final String SHOW_VIEW = "SHOW CREATE VIEW ";
-
+	private static final String SHOW_COLUMN = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ?";
 	//private static final String SCHEMA_SELECT = "SHOW DATABASES";
 
 	/**
@@ -433,6 +434,7 @@ public final class MariaDBSchemaFetcher extends
 	protected void buildTableColumns(final Connection conn,
 			final Catalog catalog, final Schema schema, final Table table) throws SQLException {
 		super.buildTableColumns(conn, catalog, schema, table);
+		
 
 		// get auto increment max value
 		final Long nextVal = getAutoIncNextValByTableName(conn, table.getName());
@@ -441,6 +443,34 @@ public final class MariaDBSchemaFetcher extends
 
 		ResultSet rs = null; // NOPMD
 		PreparedStatement stmt = null; // NOPMD
+		
+		
+		try {
+			stmt = conn.prepareStatement(SHOW_COLUMN);
+			stmt.setString(1, table.getName());
+			rs = stmt.executeQuery();
+			
+			while (rs.next()) {
+				String column_name = rs.getString("COLUMN_NAME");
+				String type_name = rs.getString("DATA_TYPE");
+				final Column column = table.getColumnByName(column_name);
+				if(column != null) {
+					column.setDataType(type_name);
+				}
+				
+			}
+			
+		}
+		catch (Exception ex) {
+			LOG.error("Read table column information error:" + table.getName(), ex);
+		}
+		finally {
+			
+		}
+			
+		
+		
+		
 		try {
 			stmt = conn.prepareStatement(sqlStr);
 			rs = stmt.executeQuery();
@@ -971,6 +1001,8 @@ public final class MariaDBSchemaFetcher extends
 			Closer.close(stmt);
 		}
 	}
+	
+
 
 	//	/**
 	//	 * get table's row count by schema name
