@@ -34,23 +34,23 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 
-import org.bson.RawBsonDocument;
 
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.export.IExportDataHandler;
-import com.informix.jdbc.IfxBSONObject;
 
 
 /**
- * InformixBSONTypeHandler Description
+ * InformixSetTypeHandler Description
  *
  * @author rathana
  * @version 1.0 
  * @created Oct 13, 2022
  */
-public class InformixBSONTypeHandler implements
+public class InformixSetTypeHandler implements
 IExportDataHandler{
 
 	/**
@@ -63,16 +63,19 @@ IExportDataHandler{
 	 */
 	public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
 		
-		try {
-			byte[] bytes = rs.getBytes(column.getName());
-			IfxBSONObject bson = new IfxBSONObject(bytes);
-//			RawBsonDocument bson = new RawBsonDocument(bytes);
-			
-			return bson.toJson();
-		}catch(Exception e) {
-			return "";
+		Object obj = rs.getObject(column.getName());
+		String [] objs = new String[0];
+		if(obj instanceof HashSet) {
+			HashSet<String> hs = (HashSet<String>) obj;
+			objs = new String[hs.size()];
+			int i = 0;
+			for(String o: hs) {
+				
+				objs[i++] = o;
+			}
 		}
 		
+		return objs;
 		
 	}
 

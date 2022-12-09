@@ -31,26 +31,27 @@
 package com.cubrid.cubridmigration.informix.export.handler;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Map;
 
-import org.bson.RawBsonDocument;
 
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.export.IExportDataHandler;
-import com.informix.jdbc.IfxBSONObject;
+import com.informix.jdbc.IfxStruct;
 
 
 /**
- * InformixBSONTypeHandler Description
+ * InformixBooleanTypeHandler Description
  *
  * @author rathana
  * @version 1.0 
  * @created Oct 13, 2022
  */
-public class InformixBSONTypeHandler implements
+public class InformixCustomTypeHandler implements
 IExportDataHandler{
 
 	/**
@@ -63,16 +64,18 @@ IExportDataHandler{
 	 */
 	public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
 		
-		try {
-			byte[] bytes = rs.getBytes(column.getName());
-			IfxBSONObject bson = new IfxBSONObject(bytes);
-//			RawBsonDocument bson = new RawBsonDocument(bytes);
+		 Object o = rs.getObject(column.getName());
+		 try {
+			Method method = o.getClass().getMethod("getAttributes");
+			Object[] objs = (Object[]) method.invoke(o);
+			String value = Arrays.toString(objs);
+			return value;
 			
-			return bson.toJson();
-		}catch(Exception e) {
-			return "";
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		
+		 return null;
 		
 	}
 

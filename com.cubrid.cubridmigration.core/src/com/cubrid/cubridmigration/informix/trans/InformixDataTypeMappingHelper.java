@@ -54,14 +54,18 @@ public class InformixDataTypeMappingHelper extends AbstractDataTypeMappingHelper
 	@Override
 	public String getMapKey(String datatype, String precision, String scale) {
 		// TODO Auto-generated method stub
-		String type = datatype.toLowerCase(Locale.ENGLISH);
-		if(type.contains("datetime")) {
-			return "datetime";
+		if(!datatype.isEmpty()) {
+			String type = datatype.toLowerCase(Locale.ENGLISH);
+			if(type.contains("datetime")) {
+				return "datetime";
+			}else if(type.contains("interval")){
+				return "interval";
+			}else if(type.contains("sendreceive")) {
+				return "set";
+			}
 		}
-		else if(type.contains("interval")){
-			return "interval";
-		}
-		return type;
+		
+		return datatype;
 	}
 	
 	/**

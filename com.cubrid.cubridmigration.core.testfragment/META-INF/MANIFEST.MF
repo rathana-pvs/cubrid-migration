@@ -16,3 +16,5 @@ Bundle-ClassPath: lib/cglib-nodep-2.1_3.jar,
 Require-Bundle: org.junit4
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
+Import-Package: org.eclipse.core.runtime,
+ org.junit;version="4.13.2"

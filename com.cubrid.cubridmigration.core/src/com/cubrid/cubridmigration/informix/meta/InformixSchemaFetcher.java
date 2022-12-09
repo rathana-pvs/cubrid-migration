@@ -231,6 +231,10 @@ public class InformixSchemaFetcher extends AbstractJDBCSchemaFetcher{
 		}
 			
 	}
+	
+	
+
+	
 	/**
 	 * Return a list of view name. for different database, this method may be
 	 * needed to override

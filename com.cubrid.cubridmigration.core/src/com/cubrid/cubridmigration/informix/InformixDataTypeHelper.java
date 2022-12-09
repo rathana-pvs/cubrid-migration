@@ -100,7 +100,7 @@ public class InformixDataTypeHelper extends DBDataTypeHelper{
 			return colType + "(" + precision + ")";
 		} else if (checkType("/char/varchar/nchar/serial/", colType)) {
 			return colType + "(" + precision + ")";
-		} else if (checkType("/decimal/numeric/money/", colType)) {
+		} else if (checkType("/decimal/numeric/money/flaot/", colType)) {
 			return colType + "(" + precision + "," + scale + ")";
 		}
 		return colType;
@@ -115,7 +115,8 @@ public class InformixDataTypeHelper extends DBDataTypeHelper{
 	@Override
 	public boolean isCollection(String dataType) {
 		// TODO Auto-generated method stub
-		return checkType(INFOMRIX_COLLECTION_TYPES, dataType);
+//		return checkType(INFOMRIX_COLLECTION_TYPES, dataType);
+		return false;
 	}
 	
 	public boolean isEnum(String dataType) {

@@ -27,53 +27,51 @@
  * OF SUCH DAMAGE. 
  *
  */
+package com.cubrid.cubridmigration.informix;
 
-package com.cubrid.cubridmigration.informix.export.handler;
-
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Method;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Map;
-
-import org.bson.RawBsonDocument;
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.cubrid.cubridmigration.core.dbobject.Column;
-import com.cubrid.cubridmigration.core.export.IExportDataHandler;
-import com.informix.jdbc.IfxBSONObject;
-
 
 /**
- * InformixBSONTypeHandler Description
- *
+ * InformixDataTypeHelperTest Description
  * @author rathana
- * @version 1.0 
- * @created Oct 13, 2022
+ * @version 1.0
+ * @created Dec 7, 2022
  */
-public class InformixBSONTypeHandler implements
-IExportDataHandler{
+public class InformixDataTypeHelperTest {
 
-	/**
-	 * Retrieves the value object of year column.
-	 * 
-	 * @param rs the result set
-	 * @param column column description
-	 * @return value of column
-	 * @throws SQLException e
-	 */
-	public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
-		
-		try {
-			byte[] bytes = rs.getBytes(column.getName());
-			IfxBSONObject bson = new IfxBSONObject(bytes);
-//			RawBsonDocument bson = new RawBsonDocument(bytes);
-			
-			return bson.toJson();
-		}catch(Exception e) {
-			return "";
-		}
-		
-		
+	InformixDataTypeHelper helper = InformixDataTypeHelper.getInstance(null);
+	
+	
+	
+	private String getDataTypeStr(String colType, Integer precision, Integer scale) {
+		Column column = new Column();
+		column.setDataType(colType);
+		column.setPrecision(precision);
+		column.setScale(scale);
+		return helper.getShownDataType(column);
 	}
+	
+	/**
+	 * testMakeType
+	 */
+	@Test
+	public final void testMakeType() {
+		Integer precision = 0;
+		Integer scale = 2;
 
+		Assert.assertEquals("varchar(255)",
+				getDataTypeStr("varchar", 255, scale));
+		Assert.assertEquals("char(255)",
+				getDataTypeStr("char", 255, scale));
+		Assert.assertEquals("nchar(255)",
+				getDataTypeStr("nchar", 255, scale));
+		Assert.assertEquals("integer",
+				getDataTypeStr("integer", 5, scale));
+		Assert.assertEquals("serial",
+				getDataTypeStr("serial", 4, scale));
+	}
+	
 }

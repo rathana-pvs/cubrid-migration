@@ -36,21 +36,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.bson.RawBsonDocument;
 
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.export.IExportDataHandler;
-import com.informix.jdbc.IfxBSONObject;
 
 
 /**
- * InformixBSONTypeHandler Description
+ * InformixBooleanTypeHandler Description
  *
  * @author rathana
  * @version 1.0 
  * @created Oct 13, 2022
  */
-public class InformixBSONTypeHandler implements
+public class InformixBooleanTypeHandler implements
 IExportDataHandler{
 
 	/**
@@ -63,15 +61,11 @@ IExportDataHandler{
 	 */
 	public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
 		
-		try {
-			byte[] bytes = rs.getBytes(column.getName());
-			IfxBSONObject bson = new IfxBSONObject(bytes);
-//			RawBsonDocument bson = new RawBsonDocument(bytes);
-			
-			return bson.toJson();
-		}catch(Exception e) {
-			return "";
+		Boolean value = rs.getBoolean(column.getName());
+		if(value) {
+			return 1;
 		}
+		return 0;
 		
 		
 	}

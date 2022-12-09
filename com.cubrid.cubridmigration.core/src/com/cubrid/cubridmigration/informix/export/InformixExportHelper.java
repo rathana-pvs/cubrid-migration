@@ -40,7 +40,10 @@ import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.core.export.IExportDataHandler;
 import com.cubrid.cubridmigration.core.export.handler.CharTypeHandler;
 import com.cubrid.cubridmigration.informix.export.handler.InformixBSONTypeHandler;
+import com.cubrid.cubridmigration.informix.export.handler.InformixBooleanTypeHandler;
+import com.cubrid.cubridmigration.informix.export.handler.InformixCustomTypeHandler;
 import com.cubrid.cubridmigration.informix.export.handler.InformixJSONTypeHandler;
+import com.cubrid.cubridmigration.informix.export.handler.InformixSetTypeHandler;
 
 /**
  * InformixExportHelper Description
@@ -50,11 +53,15 @@ import com.cubrid.cubridmigration.informix.export.handler.InformixJSONTypeHandle
  * @created Aug 18, 2022
  */
 public class InformixExportHelper extends DBExportHelper{
+	public static final int CUSTOM = -1;
 	
 	public InformixExportHelper(){
 		super();
 		handlerMap2.put("json", new InformixJSONTypeHandler());
-		handlerMap2.put("bson", new InformixJSONTypeHandler());
+		handlerMap2.put("bson", new InformixBSONTypeHandler());
+		handlerMap2.put("boolean", new InformixBooleanTypeHandler());
+		handlerMap2.put("sendreceive", new InformixSetTypeHandler());
+		handlerMap1.put(CUSTOM, new InformixCustomTypeHandler());
 	}
 	
 	/**
