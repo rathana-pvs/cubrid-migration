@@ -88,7 +88,7 @@ public class MigrationWizard extends
 
 	private static final int[] IDX_SQL = new int[] {0, 5, 6, 7};
 
-	private static final int[] IDX_ONLINE = new int[] {0, 1, 2, 3, 4};
+	private static final int[] IDX_ONLINE = new int[] {0, 1, 2, 3, 4, 5};
 
 	//private static final int[] IDX_OFFLINE = new int[]{0, 1, 2, 11, 3, 4 };
 
@@ -101,12 +101,13 @@ public class MigrationWizard extends
 	 * @return Set<Integer> of database type ids
 	 */
 	public static Set<Integer> getSupportedSrcDBTypes() {
-		Set<Integer> supportedDBs = new HashSet<Integer>(4);
+		Set<Integer> supportedDBs = new HashSet<Integer>(6);
 		supportedDBs.add(DatabaseType.MYSQL.getID());
 		supportedDBs.add(DatabaseType.ORACLE.getID());
 		supportedDBs.add(DatabaseType.CUBRID.getID());
 		supportedDBs.add(DatabaseType.MSSQL.getID());
 		supportedDBs.add(DatabaseType.MARIADB.getID());
+		supportedDBs.add(DatabaseType.INFORMIX.getID());
 		return supportedDBs;
 	}
 
