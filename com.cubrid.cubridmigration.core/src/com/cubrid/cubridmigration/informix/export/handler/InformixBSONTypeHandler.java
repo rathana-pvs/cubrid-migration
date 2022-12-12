@@ -60,10 +60,20 @@ IExportDataHandler{
 	public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
 		
 		try {
-			Object o = rs.getObject(column.getName());
-			Method method = o.getClass().getMethod("toJson");
-			String value = (String) method.invoke(o);
-			return value;
+			
+			try {
+				Class<?> c = Class.forName("com.informix.jdbc.IfxBSONObject");
+	            byte[] b = rs.getBytes(column.getName());
+	            Object o = c.newInstance();
+	            Method method = o.getClass().getMethod("setBytes", byte[].class);
+	            method.invoke(o, b);
+	            Method method1 = o.getClass().getMethod("toJson");
+	            String value = (String) method1.invoke(o);
+	            return value;
+			}catch(Exception e) {
+				e.printStackTrace();
+				return "";
+			}
 		}catch(Exception e) {
 			e.printStackTrace();
 			return "";
