@@ -49,7 +49,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/hadoop-thriftfs-1.1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hadoop-tools-1.1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hsqldb-1.8.0.10.jar"/>
-	<classpathentry kind="lib" path="lib/jdbc-4.50.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/bson-4.8.0.jar"/>
+	<classpathentry kind="lib" path="lib/jdbc-4.50.7.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

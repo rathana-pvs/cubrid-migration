@@ -30,15 +30,13 @@
 
 package com.cubrid.cubridmigration.informix.export.handler;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.export.IExportDataHandler;
-import com.informix.jdbc.IfxBSONObject;
+
 
 
 /**
@@ -62,10 +60,12 @@ IExportDataHandler{
 	public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
 		
 		try {
-			byte[] bytes = rs.getBytes(column.getName());
-			IfxBSONObject bson = new IfxBSONObject(bytes);
-			return bson.toJson();
+			Object o = rs.getObject(column.getName());
+			Method method = o.getClass().getMethod("toJson");
+			String value = (String) method.invoke(o);
+			return value;
 		}catch(Exception e) {
+			e.printStackTrace();
 			return "";
 		}
 		
