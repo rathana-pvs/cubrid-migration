@@ -88,7 +88,7 @@ public class MigrationWizard extends
 
 	private static final int[] IDX_SQL = new int[] {0, 5, 6, 7};
 
-	private static final int[] IDX_ONLINE = new int[] {0, 1, 2, 3, 4, 5};
+	private static final int[] IDX_ONLINE = new int[] {0, 1, 2, 3, 4};
 
 	//private static final int[] IDX_OFFLINE = new int[]{0, 1, 2, 11, 3, 4 };
 
