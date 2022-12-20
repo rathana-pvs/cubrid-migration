@@ -60,8 +60,8 @@ public class InformixExportHelper extends DBExportHelper{
 		handlerMap2.put("json", new InformixJSONTypeHandler());
 		handlerMap2.put("bson", new InformixBSONTypeHandler());
 		handlerMap2.put("boolean", new InformixBooleanTypeHandler());
-		handlerMap2.put("sendreceive", new InformixSetTypeHandler());
-		handlerMap1.put(CUSTOM, new InformixCustomTypeHandler());
+		handlerMap2.put("set", new InformixSetTypeHandler());
+//		handlerMap1.put(CUSTOM, new InformixCustomTypeHandler());
 	}
 	
 	/**
