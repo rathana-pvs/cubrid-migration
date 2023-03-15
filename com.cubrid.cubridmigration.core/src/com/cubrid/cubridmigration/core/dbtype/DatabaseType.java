@@ -51,6 +51,7 @@ import com.cubrid.cubridmigration.mariadb.MariaDBDatabase;
 import com.cubrid.cubridmigration.mssql.MSSQLDatabase;
 import com.cubrid.cubridmigration.mysql.MySQLDatabase;
 import com.cubrid.cubridmigration.oracle.OracleDatabase;
+import com.cubrid.cubridmigration.postgresql.PostgreSQLDatabase;
 
 /**
  * Base class of Database Types
@@ -74,8 +75,10 @@ public abstract class DatabaseType {
 	public static final DatabaseType MARIADB = new MariaDBDatabase();
 	
 	public static final DatabaseType INFORMIX = new InformixDatabase();
+	
+	public static final DatabaseType POSTGRESQL = new PostgreSQLDatabase();
 
-	private static final DatabaseType[] DTS = new DatabaseType[] {MYSQL, CUBRID, ORACLE, MSSQL, MARIADB, INFORMIX};
+	private static final DatabaseType[] DTS = new DatabaseType[] {MYSQL, CUBRID, ORACLE, MSSQL, MARIADB, INFORMIX, POSTGRESQL};
 
 
 	/**
