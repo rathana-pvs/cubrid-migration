@@ -54,8 +54,18 @@ public abstract class TableOrView extends
 	 * except Oracle.
 	 */
 	protected String owner;
+	protected String targetOwner;
+
 	protected final List<Column> columns = new ArrayList<Column>();
 
+	public String getTargetOwner() {
+		return targetOwner;
+	}
+
+	public void setTargetOwner(String targetOwner) {
+		this.targetOwner = targetOwner;
+	}
+	
 	public Schema getSchema() {
 		return schema;
 	}
@@ -135,6 +145,28 @@ public abstract class TableOrView extends
 		}
 		return null;
 	}
+	
+	/**
+	 * get Column By column Name, table name and owner
+	 * 
+	 * @param name String
+	 * @return Column
+	 */
+	public Column getColumnByName(String tableOwnerName, String tableName, String name) {
+		if (tableOwnerName == null || tableName == null) {
+			return getColumnByName(name);
+		}
+		
+		for (Column column : columns) {
+			if (column.getName().equalsIgnoreCase(name) 
+					&& column.getTableOrView().getOwner().equals(tableOwnerName)
+					&& column.getTableOrView().getName().equals(tableName)) {
+				return column;
+			}
+		}
+		return null;
+	}
+	
 
 	/**
 	 * get Column By column Name

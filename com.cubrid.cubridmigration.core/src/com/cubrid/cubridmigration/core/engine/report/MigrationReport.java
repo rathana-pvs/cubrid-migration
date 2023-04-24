@@ -72,7 +72,7 @@ public class MigrationReport implements
 
 	private static final long serialVersionUID = -6045872698227171614L;
 
-	private final static String[] OVERVIEW_TYPES = new String[] {DBObject.OBJ_TYPE_TABLE,
+	private final static String[] OVERVIEW_TYPES = new String[] {DBObject.OBJ_TYPE_SCHEMA, DBObject.OBJ_TYPE_TABLE,
 			DBObject.OBJ_TYPE_VIEW, DBObject.OBJ_TYPE_PK, DBObject.OBJ_TYPE_FK,
 			DBObject.OBJ_TYPE_INDEX, DBObject.OBJ_TYPE_SEQUENCE, DBObject.OBJ_TYPE_TRIGGER,
 			DBObject.OBJ_TYPE_FUNCTION, DBObject.OBJ_TYPE_PROCEDURE, DBObject.OBJ_TYPE_RECORD};
@@ -88,7 +88,16 @@ public class MigrationReport implements
 			return "primary key of " + ((PK) obj).getTable().getName();
 		} else if (obj instanceof Index) {
 			return "[" + ((Index) obj).getTable().getName() + "]" + obj.getName();
+		} else if (obj instanceof Table) {
+			Table tempTable = (Table) obj;
+			
+			if (tempTable.getOwner() != null) { 
+				return tempTable.getOwner() + "." + tempTable.getName();
+			} else {
+				return tempTable.getName();
+			}
 		}
+		
 		return obj.getName();
 	}
 
@@ -224,6 +233,7 @@ public class MigrationReport implements
 		DBObjMigrationResult objResult = new DBObjMigrationResult();
 		objResult.setObjName(getDBObjName(dbo));
 		objResult.setObjType(dbo.getObjType());
+		objResult.setObjOwner(getObjectOwner(dbo));
 		dbObjectsResult.add(objResult);
 	}
 
@@ -259,15 +269,50 @@ public class MigrationReport implements
 	public DBObjMigrationResult getDBObjResult(DBObject obj) {
 		for (DBObjMigrationResult or : dbObjectsResult) {
 			if (or.getObjName().equals(getDBObjName(obj))
-					&& or.getObjType().equals(obj.getObjType())) {
+					&& or.getObjType().equals(obj.getObjType())
+					&& !(hasSameNameObj(or, obj))) {
 				return or;
 			}
 		}
 		DBObjMigrationResult result = new DBObjMigrationResult();
+		
 		result.setObjName(getDBObjName(obj));
 		result.setObjType(obj.getObjType());
+		result.setObjOwner(getObjectOwner(obj));
 		dbObjectsResult.add(result);
 		return result;
+	}
+	
+	/**
+	 * If the dbobject has the same name in another schema, it returns the result separately through the owner.
+	 * 
+	 * @param or DBObjMigrationResult
+	 * @param obj DBObject
+	 * @return has same name object in dbObjectResult
+	 */
+	private boolean hasSameNameObj(DBObjMigrationResult or, DBObject obj) {
+		if (or.getObjOwner() == null) {
+			return false;
+		}
+		return !(or.getObjOwner().equalsIgnoreCase(getObjectOwner(obj)));
+	}
+	
+	private String getObjectOwner(DBObject obj) {
+		if (obj instanceof Table) {
+			return ((Table) obj).getOwner();
+		} else if (obj instanceof View) {
+			return ((View) obj).getOwner();
+		} else if (obj instanceof Sequence) {
+			return ((Sequence) obj).getOwner();
+		} else if (obj instanceof Index) {
+			return ((Index) obj).getTable().getOwner();
+		} else if (obj instanceof FK) {
+			return ((FK) obj).getTable().getOwner();
+		} else if (obj instanceof PK) {
+			return ((PK) obj).getTable().getOwner();
+		} else {
+			return null;
+		}
 	}
 
 	/**
