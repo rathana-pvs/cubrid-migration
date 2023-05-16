@@ -117,6 +117,10 @@ public class MigrationTasksScheduler {
 			createTriggers();
 		}
 		updateIndexStatistics();
+		
+		if (!config.targetIsOnline() && config.isSplitSchema()) {
+			createSchemaFileList();
+		}
 	}
 
 	/**
@@ -202,9 +206,24 @@ public class MigrationTasksScheduler {
 	private void clearTargetDB() {
 		MigrationConfiguration config = context.getConfig();
 		if (config.targetIsFile()) {
-			PathUtils.deleteFile(new File(config.getTargetSchemaFileName()));
-			PathUtils.deleteFile(new File(config.getTargetDataFileName()));
-			PathUtils.deleteFile(new File(config.getTargetIndexFileName()));
+			for (Schema schema : config.getTargetSchemaList()) {
+				String schemaName = schema.getTargetSchemaName();
+				if (config.isSplitSchema()) {
+					PathUtils.deleteFile(new File(config.getTargetTableFileName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetViewFileName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetPkFileName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetFkFileName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetSerialFileName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetSchemaFileListName(schemaName)));
+				} else {
+					PathUtils.deleteFile(new File(config.getTargetSchemaFileName(schemaName)));
+				}
+				PathUtils.deleteFile(new File(config.getTargetUpdateStatisticFileName(schemaName)));
+				PathUtils.deleteFile(new File(config.getTargetIndexFileName(schemaName)));
+				PathUtils.deleteFile(new File(config.getTargetDataFileName(schemaName)));
+				PathUtils.deleteFile(new File(config.getFileRepositroyPath() + schemaName));
+			}
+			;
 		}
 		executeTask(taskFactory.createCleanDBTask());
 	}
@@ -487,6 +506,13 @@ public class MigrationTasksScheduler {
 	 */
 	private void updateIndexStatistics() {
 		executeTask(taskFactory.createUpdateStatisticsTask());
+	}
+	
+	/**
+	 * List of schema file names to be used in loaddb
+	 */
+	private void createSchemaFileList() {
+		executeTask(taskFactory.createSchemaFileListTask());
 	}
 
 	public void setTaskFactory(MigrationTaskFactory taskFactory) {

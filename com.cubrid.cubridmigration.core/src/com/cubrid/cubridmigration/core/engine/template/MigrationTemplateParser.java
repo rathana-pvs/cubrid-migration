@@ -549,12 +549,10 @@ public final class MigrationTemplateParser {
 		if (config.targetIsFile()) {
 			Element dir = createElement(document, target, TemplateTags.TAG_FILE_REPOSITORY);
 			dir.setAttribute(TemplateTags.ATTR_DIR, config.getFileRepositroyPath());
-			dir.setAttribute(TemplateTags.ATTR_SCHEMA, config.getTargetSchemaFileName());
-			dir.setAttribute(TemplateTags.ATTR_DATA, config.getTargetDataFileName());
-			dir.setAttribute(TemplateTags.ATTR_INDEX, config.getTargetIndexFileName());
 			dir.setAttribute(TemplateTags.ATTR_TIMEZONE, config.getTargetFileTimeZone());
 			dir.setAttribute(TemplateTags.ATTR_CHARSET, config.getTargetCharSet());
 			dir.setAttribute(TemplateTags.ATTR_ADD_SCHEMA, config.getOfflineUserSchema().toString());
+			dir.setAttribute(TemplateTags.ATTR_SPLIT_SCHEMA, getBooleanString(config.isSplitSchema()));
 
 			dir.setAttribute(TemplateTags.ATTR_ONETABLEONEFILE,
 					getBooleanString(config.isOneTableOneFile()));
