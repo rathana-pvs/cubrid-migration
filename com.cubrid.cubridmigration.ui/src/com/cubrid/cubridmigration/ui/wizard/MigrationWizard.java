@@ -109,6 +109,7 @@ public class MigrationWizard extends
 		supportedDBs.add(DatabaseType.MSSQL.getID());
 		supportedDBs.add(DatabaseType.MARIADB.getID());
 		supportedDBs.add(DatabaseType.INFORMIX.getID());
+		supportedDBs.add(DatabaseType.POSTGRESQL.getID());
 		return supportedDBs;
 	}
 

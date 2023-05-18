@@ -72,6 +72,8 @@ public class DataTypeConstant {
 	public static final int CUBRID_DT_BLOB = Types.BLOB; //2004;
 	public static final int CUBRID_DT_ENUM = 61111; //12
 	public static final int CUBRID_DT_JSON = 71111;
+	public static final int CUBRID_DT_TIMESTAMPTZ = Types.TIMESTAMP_WITH_TIMEZONE;
+	
 	/** MYSQL **/
 	public static final int MYSQL_MAXSIZE = 1073741823;
 	public static final String MYSQL_NCHARMAXSIZE = "536870911";

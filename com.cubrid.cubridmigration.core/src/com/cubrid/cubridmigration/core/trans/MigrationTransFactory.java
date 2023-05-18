@@ -44,6 +44,8 @@ import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDTranformHelper;
 import com.cubrid.cubridmigration.mysql.trans.MySQLDataTypeMappingHelper;
 import com.cubrid.cubridmigration.oracle.trans.Oracle2CUBRIDTranformHelper;
 import com.cubrid.cubridmigration.oracle.trans.OracleDataTypeMappingHelper;
+import com.cubrid.cubridmigration.postgresql.trans.PostgreSQL2CUBRIDTransformHelper;
+import com.cubrid.cubridmigration.postgresql.trans.PostgreSQLDataTypeMappingHelper;
 
 /**
  * MigrationTransFactory will return the DBTransform instance by input source
@@ -69,6 +71,9 @@ public class MigrationTransFactory {
 			new MariaDBDataTypeMappingHelper(), ToCUBRIDDataConverterFacade.getIntance());
 	private static final Informix2CUBRIDTransformHelper INFORMIX2CUBRID_TRANSFORM_HELPER = new Informix2CUBRIDTransformHelper(
 			new InformixDataTypeMappingHelper(),ToCUBRIDDataConverterFacade.getIntance());
+	
+	private static final PostgreSQL2CUBRIDTransformHelper POSTGRESQL2CUBRID_TRANSFORM_HELPER = new PostgreSQL2CUBRIDTransformHelper(
+			new PostgreSQLDataTypeMappingHelper(),ToCUBRIDDataConverterFacade.getIntance());
 	/**
 	 * getTransformHelper of source to target migration
 	 * 
@@ -90,6 +95,8 @@ public class MigrationTransFactory {
 			return MARIADB2CUBRID_TRANFORM_HELPER;
 		}else if (srcDT.getID() == DatabaseType.INFORMIX.getID()) {
 			return INFORMIX2CUBRID_TRANSFORM_HELPER;
+		}else if (srcDT.getID() == DatabaseType.POSTGRESQL.getID()) {
+			return POSTGRESQL2CUBRID_TRANSFORM_HELPER;
 		}
 		throw new IllegalArgumentException("Can't support migration type.");
 	}

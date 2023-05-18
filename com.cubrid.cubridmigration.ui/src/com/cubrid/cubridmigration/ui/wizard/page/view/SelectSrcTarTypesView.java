@@ -78,6 +78,7 @@ public class SelectSrcTarTypesView {
 	private Button btnOnlineMSSQLSrc;
 	private Button btnOnlineMariaDBSrc;
 	private Button btnOnlineInformixSrc;
+	private Button btnOnlinePostgreSQLSrc;
 
 	private Button btnDumpSrc;
 	private Button btnSQLSrc;
@@ -127,6 +128,12 @@ public class SelectSrcTarTypesView {
 				Messages.btnSrcOnlineInformixDBDes);
 		btnOnlineInformixSrc.setData(MigrationConfiguration.SOURCE_TYPE_INFORMIX);
 		srcButtons.add(btnOnlineInformixSrc);
+		
+		/*add new button for postgresql*/
+		btnOnlinePostgreSQLSrc = createSrcTarTypeBtn(grpSrc, Messages.btnSrcOnlinePostgreSQLDB,
+				Messages.btnSrcOnlinePostgreSQLDBDes);
+		btnOnlinePostgreSQLSrc.setData(MigrationConfiguration.SOURCE_TYPE_POSTGRESQL);
+		srcButtons.add(btnOnlinePostgreSQLSrc);
 		
 		Label comSep = new Label(grpSrc, SWT.SEPARATOR | SWT.HORIZONTAL);
 		{

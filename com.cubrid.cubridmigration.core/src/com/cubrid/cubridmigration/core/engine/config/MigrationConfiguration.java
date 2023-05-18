@@ -108,6 +108,7 @@ public class MigrationConfiguration {
 	public static final int SOURCE_TYPE_MSSQL = DatabaseType.MSSQL.getID();
 	public static final int SOURCE_TYPE_MARIADB = DatabaseType.MARIADB.getID();
 	public static final int SOURCE_TYPE_INFORMIX = DatabaseType.INFORMIX.getID();
+	public static final int SOURCE_TYPE_POSTGRESQL = DatabaseType.POSTGRESQL.getID();
 	
 	public static final int SOURCE_TYPE_XML_1 = 101;
 	public static final int SOURCE_TYPE_SQL = 102;
@@ -128,6 +129,9 @@ public class MigrationConfiguration {
 	private static final String[] DATA_FORMAT_EXT = new String[] { ".txt", ".csv", ".sql", ".xls",
 			"", "" };
 	private static final String[] DATA_FORMAT_LABEL = new String[] { "LoadDB", "CSV", "SQL", "XLS" };
+	private static final List<Integer> SOURCE_TYPES = Arrays.asList(SOURCE_TYPE_CUBRID, 
+			SOURCE_TYPE_MYSQL, SOURCE_TYPE_ORACLE, SOURCE_TYPE_ORACLE, SOURCE_TYPE_MSSQL, SOURCE_TYPE_MARIADB,
+			SOURCE_TYPE_INFORMIX, SOURCE_TYPE_POSTGRESQL);
 
 	/**
 	 * Retrieves all fomrat exts
@@ -3783,9 +3787,10 @@ public class MigrationConfiguration {
 	 * @return true if the source is an online database
 	 */
 	public boolean sourceIsOnline() {
-		return (sourceType == SOURCE_TYPE_CUBRID) || (sourceType == SOURCE_TYPE_MYSQL)
-				|| (sourceType == SOURCE_TYPE_ORACLE) || (sourceType == SOURCE_TYPE_MSSQL)
-				|| (sourceType == SOURCE_TYPE_MARIADB)|| (sourceType == SOURCE_TYPE_INFORMIX);
+		return SOURCE_TYPES.contains(sourceType);
+//		return (sourceType == SOURCE_TYPE_CUBRID) || (sourceType == SOURCE_TYPE_MYSQL)
+//				|| (sourceType == SOURCE_TYPE_ORACLE) || (sourceType == SOURCE_TYPE_MSSQL)
+//				|| (sourceType == SOURCE_TYPE_MARIADB)|| (sourceType == SOURCE_TYPE_INFORMIX);
 	}
 
 	/**
