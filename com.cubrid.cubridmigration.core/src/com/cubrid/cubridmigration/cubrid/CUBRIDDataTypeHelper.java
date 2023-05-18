@@ -291,6 +291,12 @@ public final class CUBRIDDataTypeHelper extends
 				DataTypeConstant.CUBRID_DT_JSON, "json", "json");
 		jsonSymbol.getNickNames().add("json");
 		CUBRIDDATA_TYPES.add(jsonSymbol);
+		
+		//timestamptz
+		DataTypeSymbol timestamptzSymbol = new DataTypeSymbol(
+				DataTypeConstant.CUBRID_DT_TIMESTAMPTZ, "timestamptz", "timestamptz");
+		timestamptzSymbol.getNickNames().add("timestamptz");
+		CUBRIDDATA_TYPES.add(timestamptzSymbol);
 				
 	}
 
@@ -323,6 +329,7 @@ public final class CUBRIDDataTypeHelper extends
 		TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_DATE, 4);
 		TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_TIME, 4);
 		TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_TIMESTAMP, 4);
+		TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_TIMESTAMPTZ, 8);
 		TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_DATETIME, 8);
 
 		//Ignore the LOB types

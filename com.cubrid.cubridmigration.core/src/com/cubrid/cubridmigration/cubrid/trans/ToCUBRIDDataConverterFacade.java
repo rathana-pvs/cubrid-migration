@@ -117,6 +117,7 @@ public final class ToCUBRIDDataConverterFacade implements
 		converterMap.put(DataTypeConstant.CUBRID_DT_BLOB, new BlobConverter());
 		
 		converterMap.put(DataTypeConstant.CUBRID_DT_JSON, new CharConverter());
+		converterMap.put(DataTypeConstant.CUBRID_DT_TIMESTAMPTZ, new CharConverter());
 	}
 
 	/**

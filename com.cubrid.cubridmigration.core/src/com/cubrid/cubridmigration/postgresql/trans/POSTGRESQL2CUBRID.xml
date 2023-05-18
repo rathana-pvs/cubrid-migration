@@ -1,7 +1,7 @@
 <PostgreSQL2CUBRID>
 	<DataTypeMapping>
 		<SourceDataType>
-			<type>int2</type>
+			<type>smallint</type>
 			<precision></precision>
 			<scale></scale>
 		</SourceDataType>
@@ -29,7 +29,7 @@
 
 	<DataTypeMapping>
 		<SourceDataType>
-			<type>int4</type>
+			<type>integer</type>
 			<precision></precision>
 			<scale></scale>
 		</SourceDataType>
@@ -57,7 +57,7 @@
 
 	<DataTypeMapping>
 		<SourceDataType>
-			<type>int8</type>
+			<type>bigint</type>
 			<precision></precision>
 			<scale></scale>
 		</SourceDataType>
@@ -106,7 +106,7 @@
 	</DataTypeMapping>
 	<DataTypeMapping>
 		<SourceDataType>
-			<type>float4</type>
+			<type>real</type>
 			<precision></precision>
 			<scale></scale>
 		</SourceDataType>
@@ -134,7 +134,7 @@
 	<DataTypeMapping>
 
 		<SourceDataType>
-			<type>float8</type>
+			<type>double precision</type>
 			<precision></precision>
 			<scale></scale>
 		</SourceDataType>
@@ -239,7 +239,7 @@
 	<DataTypeMapping>
 
 		<SourceDataType>
-			<type>varchar</type>
+			<type>character varying</type>
 			<precision>n</precision>
 			<scale></scale>
 		</SourceDataType>
@@ -253,7 +253,7 @@
 	<DataTypeMapping>
 
 		<SourceDataType>
-			<type>char</type>
+			<type>character</type>
 			<precision>n</precision>
 			<scale></scale>
 		</SourceDataType>
@@ -317,6 +317,18 @@
 	</DataTypeMapping>
 	<DataTypeMapping>
 		<SourceDataType>
+			<type>timestamptz</type>
+			<precision></precision>
+			<scale></scale>
+		</SourceDataType>
+		<TargetDataType>
+			<type>timestamptz</type>
+			<precision></precision>
+			<scale></scale>
+		</TargetDataType>
+	</DataTypeMapping>
+	<DataTypeMapping>
+		<SourceDataType>
 			<type>date</type>
 			<precision></precision>
 			<scale></scale>
@@ -359,7 +371,7 @@
 
 	<DataTypeMapping>
 		<SourceDataType>
-			<type>bool</type>
+			<type>boolean</type>
 			<precision></precision>
 			<scale></scale>
 		</SourceDataType>
@@ -414,6 +426,19 @@
 		<TargetDataType>
 			<type>varchar</type>
 			<precision>255</precision>
+			<scale></scale>
+		</TargetDataType>
+	</DataTypeMapping>
+	<DataTypeMapping>
+		<SourceDataType>
+			<type>geometry</type>
+			<precision></precision>
+			<scale></scale>
+		</SourceDataType>
+
+		<TargetDataType>
+			<type>varchar</type>
+			<precision>1073741823</precision>
 			<scale></scale>
 		</TargetDataType>
 	</DataTypeMapping>
