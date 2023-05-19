@@ -29,20 +29,27 @@
  */
 package com.cubrid.cubridmigration.postgresql.meta;
 
+import java.io.Reader;
 import java.math.BigInteger;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.cubrid.cubridmigration.core.common.Closer;
+import com.cubrid.cubridmigration.core.common.DBUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbmetadata.AbstractJDBCSchemaFetcher;
@@ -50,7 +57,11 @@ import com.cubrid.cubridmigration.core.dbmetadata.IBuildSchemaFilter;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.DBObjectFactory;
+import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Function;
+import com.cubrid.cubridmigration.core.dbobject.Index;
+import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
+import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
@@ -59,7 +70,7 @@ import com.cubrid.cubridmigration.core.dbobject.Trigger;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
-
+import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 
 /**
  * PostgreSQLSchemaFetcher Description
@@ -71,11 +82,15 @@ import com.cubrid.cubridmigration.core.export.DBExportHelper;
 public class PostgreSQLSchemaFetcher extends AbstractJDBCSchemaFetcher{
 
 	private final static Logger LOG = LogUtil.getLogger(PostgreSQLSchemaFetcher.class);
+	private static final String NEWLINE = "\n";
 	final static List<String> CUMSTOME_TYPE = Arrays.asList("USER-DEFINED", "ARRAY");
+	final static String TABLE_QUERY = "select pn.nspname, pc.* from pg_class as pc \r\n"
+			+ " join pg_namespace as pn on pc.relnamespace = pn.oid\r\n"
+			+ " where pn.nspname =? and pc.relkind in ('r', 'p') and relispartition = ?";
 	final static String SEQUENCE_QUERY = "select * from information_schema.sequences where sequence_schema = ?";
 	final static String VIEW_QUERY = "select pg_get_viewdef(?, true) as view_ddl";
-	final static String COLUMN_QUERY = "SELECT column_name, data_type, character_maximum_length FROM information_schema.columns WHERE table_name = ?"
-			+ " and data_type in ('USER-DEFINED', 'ARRAY')";
+	final static String COLUMN_QUERY = "SELECT * FROM information_schema.columns WHERE table_name = ?";
+			
 	final static String TRIGGER_QUERY = "select * from information_schema.triggers where trigger_schema = ?";
 	final static String ROUTINE_QUERY = "select pg_get_functiondef(p.oid) AS ddl, p.proname as name from pg_proc p "
 			+ "JOIN   pg_namespace n ON n.oid = p.pronamespace where p.prokind = ? and n.nspname = ?";
@@ -88,10 +103,342 @@ public class PostgreSQLSchemaFetcher extends AbstractJDBCSchemaFetcher{
 		
 		Catalog catalog = super.buildCatalog(conn, cp, filter);
 		catalog.setDatabaseType(DatabaseType.POSTGRESQL);
+		
+		
+		final List<Schema> schemaList = new ArrayList<Schema>(catalog.getSchemas());
+		for(Schema schema: schemaList) {
+			buildPartitions(conn, catalog, schema);
+		}
 		return catalog;
 		
 	}
 	
+	
+	
+	/**
+	 * build Partitions
+	 * 
+	 * @param conn Connection
+	 * @param catalog Catalog
+	 * @param schema Schema
+	 */
+	protected void buildPartitions(final Connection conn, final Catalog catalog, final Schema schema) {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("[IN]buildPartitions()");
+		}
+		String GET_PARTITION_INFO = "SELECT c.relname AS child_partition,\r\n"
+				+ "       p.relname AS parent_tbl,\r\n"
+				+ "       matches[1] as min_rangeval,\r\n"
+				+ "       matches[2] as max_rangeval,\r\n"
+				+ "       c.relkind as method,\r\n"
+				+ "       t.table_schema\r\n"
+				+ "FROM pg_class AS p\r\n"
+				+ "   JOIN pg_inherits AS i ON p.oid = i.inhparent\r\n"
+				+ "   JOIN pg_class AS c ON i.inhrelid = c.oid\r\n"
+				+ "   cross join regexp_matches(pg_get_expr(c.relpartbound, c.oid), '\\((.+?)\\).+\\((.+?)\\)') as matches\r\n"
+				+ "   join information_schema.tables as t on c.relname  = t.table_name\r\n"
+				+ "WHERE p.relkind = 'p' and t.table_schema = ?;";
+		
+		
+		ResultSet rs = null; //NOPMD
+		PreparedStatement stmt = null; //NOPMD
+		try {
+			stmt = conn.prepareStatement(GET_PARTITION_INFO);
+			stmt.setString(1, schema.getName());
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				
+			
+			
+			String tableName = rs.getString("parent_tbl");
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("[VAR]tableName=" + tableName);
+			}
+			Table table = schema.getTableByName(tableName);
+			
+			if(table == null) {
+				continue;
+			}
+			
+			String partitionMethod = rs.getString("method");
+			if(partitionMethod.equals("r")) {
+				partitionMethod = "RANGE";
+			}
+			PartitionInfo partitionInfo = factory.createPartitionInfo();
+			partitionInfo.setPartitionMethod(partitionMethod);
+//			partitionInfo.setDDL(getSourcePartitionDDL(table));
+			partitionInfo.setPartitionExp(null);
+			partitionInfo.setPartitionFunc(null);
+			
+			table.setPartitionInfo(partitionInfo);
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("[VAR]partitionInfo=" + partitionInfo);
+			}
+			
+			}
+			
+		}catch (Exception ex) {
+			LOG.error("", ex);
+		} finally {
+			Closer.close(rs);
+			Closer.close(stmt);
+		}
+		getPartitionColumn(conn, schema);
+		getPartitionTables(conn, schema);
+		
+		
+	}
+	
+	
+	/**
+	 * get partition column information
+	 * 
+	 * @param conn Connection
+	 * @param schema Schema
+	 */
+	private void getPartitionColumn(Connection conn, Schema schema) {
+		// TODO Auto-generated method stub
+		
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("[IN]getPartitionColumn()");
+		}
+		ResultSet rs = null; //NOPMD
+		PreparedStatement stmt = null; //NOPMD
+		
+		String GET_PART_COLUMN = "select \r\n"
+				+ "    par.relnamespace::regnamespace::text as schema, \r\n"
+				+ "    par.relname as table_name, \r\n"
+				+ "    column_index,\r\n"
+				+ "    col.column_name as column_name\r\n"
+				+ "from   \r\n"
+				+ "    (select\r\n"
+				+ "         partrelid,\r\n"
+				+ "         unnest(partattrs) column_index\r\n"
+				+ "     from\r\n"
+				+ "         pg_partitioned_table) pt \r\n"
+				+ "join pg_class par on par.oid = pt.partrelid\r\n"
+				+ "join information_schema.columns col on  \r\n"
+				+ "    col.table_schema = par.relnamespace::regnamespace::text\r\n"
+				+ "    and col.table_name = par.relname\r\n"
+				+ "    and ordinal_position = pt.column_index\r\n"
+				+ "where par.relnamespace::regnamespace::text = ?;";
+
+		try {
+			stmt = conn.prepareStatement(GET_PART_COLUMN);
+			stmt.setString(1, schema.getName());
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("[SQL]" + GET_PART_COLUMN);
+			}
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				String tableName = rs.getString("table_name");
+				String columnName = rs.getString("column_name");
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("[VAR]tableName=" + tableName + ", columnName=" + columnName);
+				}
+
+				Table table = schema.getTableByName(tableName);
+				if (table == null) {
+					continue;
+				}
+
+				PartitionInfo partitionInfo = table.getPartitionInfo();
+				partitionInfo.addPartitionColumn(table.getColumnByName(columnName));
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("[VAR]partitionInfo=" + partitionInfo);
+				}
+			}
+		} catch (Exception ex) {
+			LOG.error("", ex);
+		} finally {
+			Closer.close(rs);
+			Closer.close(stmt);
+		}
+		
+	}
+	
+	
+	
+	/**
+	 * get partition table information
+	 * 
+	 * @param conn Connection
+	 * @param schema Schema
+	 */
+	private void getPartitionTables(final Connection conn, final Schema schema) {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("[IN]getPartitionTables()");
+		}
+		
+		String GET_PART = "SELECT c.relname AS child_partition,\r\n"
+				+ "       p.relname AS parent_tbl,\r\n"
+				+ "       matches[1] as min_val,\r\n"
+				+ "       matches[2] as max_val,\r\n"
+				+ "       c.relkind,\r\n"
+				+ "       t.table_schema,\r\n"
+				+ "      row_number() OVER (PARTITION BY p.relname ORDER BY c.oid) AS partition_position\r\n"
+				+ "FROM pg_class AS p\r\n"
+				+ "   JOIN pg_inherits AS i ON p.oid = i.inhparent\r\n"
+				+ "   JOIN pg_class AS c ON i.inhrelid = c.oid\r\n"
+				+ "   cross join regexp_matches(pg_get_expr(c.relpartbound, c.oid), '\\((.+?)\\).+\\((.+?)\\)') as matches\r\n"
+				+ "   join information_schema.tables as t on c.relname  = t.table_name\r\n"
+				+ "WHERE p.relkind = 'p' and t.table_schema = ?;\r\n";
+				
+		ResultSet rs = null; //NOPMD
+		PreparedStatement stmt = null; //NOPMD
+
+		try {
+			stmt = conn.prepareStatement(GET_PART);
+			stmt.setString(1, schema.getName());
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("[SQL]" + GET_PART + ", 1=" + schema.getName() + ", 2="
+						+ schema.getName());
+			}
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				String tableName = rs.getString("parent_tbl");
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("[VAR]tableName=" + tableName);
+				}
+				Table table = schema.getTableByName(tableName);
+				if (table == null) {
+					continue;
+				}
+
+				String partitionName = rs.getString("child_partition");
+				Reader reader = rs.getCharacterStream("max_val");
+				String partitionDesc = reader == null ? null : DBUtils.reader2String(reader);
+				int partitionPosition = rs.getInt("partition_position");
+
+				PartitionInfo partitionInfo = table.getPartitionInfo();
+				partitionInfo.setPartitionExp(null);
+				partitionInfo.setPartitionFunc(null);
+
+				PartitionTable partition = factory.createPartitionTable();
+				partition.setPartitionName(partitionName);
+				partition.setPartitionDesc(partitionDesc);
+				partition.setPartitionIdx(partitionPosition);
+				partitionInfo.addPartition(partition);
+				partitionInfo.setDDL(getTablePartitonDDL(table));
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("[VAR]partition=" + partition);
+				}
+			}
+		} catch (Exception ex) {
+			LOG.error("", ex);
+		} finally {
+			Closer.close(rs);
+			Closer.close(stmt);
+		}
+	}
+	
+	
+	/**
+	 * getTablePartitonDDL
+	 * 
+	 * @param table Table
+	 * @return String
+	 */
+	public String getTablePartitonDDL(Table table) {
+		PartitionInfo partInfo = table.getPartitionInfo();
+		if (partInfo == null) {
+			return null;
+		}
+		try {
+			String partMethod = partInfo.getPartitionMethod();
+
+			if (PartitionInfo.PARTITION_METHOD_KEY.equals(partMethod)
+					|| PartitionInfo.PARTITION_METHOD_LINEARKEY.equals(partMethod)) {
+				return partInfo.getDDL();
+			}
+			StringBuffer buf = new StringBuffer("PARTITION BY ");
+			//Expression
+			StringBuffer exp = new StringBuffer();
+			exp.append("(");
+			if (StringUtils.isEmpty(partInfo.getPartitionFunc())) {
+				exp.append("\"").append(partInfo.getPartitionColumns().get(0).getName()).append(
+						"\"");
+			} else {
+				exp.append(DBUtils.getCubridPartitionExp(partInfo));
+			}
+			exp.append(")");
+
+			List<PartitionTable> partitions = partInfo.getPartitions();
+			if (PartitionInfo.PARTITION_METHOD_RANGE.equals(partMethod)) {
+				buf.append(PartitionInfo.PARTITION_METHOD_RANGE).append(" ");
+				buf.append(exp).append("(").append(NEWLINE);
+				for (int i = 0; i < partitions.size(); i++) {
+					PartitionTable partTable = partitions.get(i);
+					buf.append("PARTITION \"");
+					buf.append(partTable.getPartitionName());
+					buf.append("\" VALUES LESS THAN ");
+
+					String partitionDesc = partTable.getPartitionDesc();
+
+					if ("MAXVALUE".equalsIgnoreCase(partitionDesc)) {
+						buf.append(partitionDesc);
+					} else {
+						buf.append("(");
+						buf.append(partitionDesc);
+						buf.append(")");
+					}
+
+					if (i != partitions.size() - 1) {
+						buf.append(",");
+						buf.append(NEWLINE);
+					}
+				}
+				buf.append(NEWLINE).append(")");
+			} else if (PartitionInfo.PARTITION_METHOD_LIST.equals(partMethod)) {
+				buf.append(PartitionInfo.PARTITION_METHOD_LIST).append(" ");
+				buf.append(exp).append(" ").append("( ").append(NEWLINE);
+				for (int i = 0; i < partitions.size(); i++) {
+					PartitionTable partitionTable = partitions.get(i);
+
+					buf.append("PARTITION ");
+					buf.append(partitionTable.getPartitionName());
+
+					buf.append(" VALUES IN (");
+
+					String partitionDesc = partitionTable.getPartitionDesc();
+
+					if (partInfo.getPartitionFunc() == null) {
+						String[] splits = partitionDesc.split(",");
+
+						for (int j = 0; j < splits.length; j++) {
+							if (j != 0) {
+								buf.append(",");
+							}
+							buf.append(splits[j]);
+						}
+
+					} else {
+						buf.append(partitionDesc);
+					}
+
+					buf.append(")");
+
+					if (i != partitions.size() - 1) {
+						buf.append(",");
+						buf.append(NEWLINE);
+					}
+
+				}
+				buf.append(NEWLINE).append(" ) ");
+			} else if (PartitionInfo.PARTITION_METHOD_HASH.equals(partMethod)
+					|| PartitionInfo.PARTITION_METHOD_LINEARHASH.equals(partMethod)) {
+				buf.append(PartitionInfo.PARTITION_METHOD_HASH).append(" ");
+				buf.append(exp).append(" ").append(NEWLINE);
+				buf.append("PARTITIONS ").append(partitions.size());
+			}
+			return buf.toString();
+		} catch (Exception e) {
+			LOG.error("", e);
+		}
+		return "";
+	}
+	
+
 	/** return schema names
 	 * 
 	 * @param conn Connection
@@ -177,6 +524,76 @@ public class PostgreSQLSchemaFetcher extends AbstractJDBCSchemaFetcher{
 			
 	}
 	
+	
+	/**
+	 * return a list of table name. for different database, this method may be
+	 * needed to override
+	 * 
+	 * @param conn Connection
+	 * @param catalog Catalog
+	 * @param schema Schema
+	 * @return List<String>
+	 * @throws SQLException e
+	 */
+	protected List<String> getAllTableNames(final Connection conn, final Catalog catalog,
+			final Schema schema) throws SQLException {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("[IN]getAllTableNames()");
+		}
+		ResultSet rs = null; //NOPMD
+		List<String> tableNameList = new ArrayList<String>();
+		try {
+			PreparedStatement stmt = conn.prepareStatement(TABLE_QUERY);
+			stmt.setString(1, schema.getName());
+			stmt.setBoolean(2, false);
+
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				String table_name = rs.getString("relname");
+				tableNameList.add(table_name);
+			}
+
+			return tableNameList;
+		} finally {
+			Closer.close(rs);
+		}
+	}
+	
+	
+	/**
+	 * Extract Table's Indexes
+	 * 
+	 * @param conn Connection
+	 * @param catalog Catalog
+	 * @param schema Schema
+	 * @param table Table
+	 * @throws SQLException e
+	 */
+	protected void buildTableIndexes(final Connection conn, final Catalog catalog,
+			final Schema schema, final Table table) throws SQLException {
+		
+		super.buildTableIndexes(conn, catalog, schema, table);
+		
+		List<Index> indexes = new ArrayList<Index>();
+		boolean status = false;
+		
+		for (Index index : table.getIndexes()) {
+			for (Index idx_reserve : indexes) {
+				List<String> columns = idx_reserve.getColumnNames();
+				if(idx_reserve.getColumnNames().equals(index.getColumnNames())) {
+					status = true;
+				}
+			}
+			if(!status) {
+				indexes.add(index);
+			}
+			status =false;
+		}
+		table.setIndexes(indexes);
+		
+	}
+	
+	
 	/**
 	 * extract Table's Columns
 	 * 
@@ -193,16 +610,6 @@ public class PostgreSQLSchemaFetcher extends AbstractJDBCSchemaFetcher{
 			LOG.debug("[IN]buildTableColumns()");
 		}
 		
-		PreparedStatement stmt = conn.prepareStatement(COLUMN_QUERY);
-		stmt.setString(1, table.getName());
-
-		ResultSet rs = stmt.executeQuery();
-		while (rs.next()) {
-			String data_type = rs.getString("data_type");
-			Column column = table.getColumnByName(rs.getString("column_name"));
-			column.setDataType(data_type);
-			
-		}
 		
 		for(Column column: table.getColumns()) {
 			if(column.getDataType().contains("serial")) {
@@ -211,6 +618,49 @@ public class PostgreSQLSchemaFetcher extends AbstractJDBCSchemaFetcher{
 			}
 		}
 		
+		PreparedStatement stmt = conn.prepareStatement(COLUMN_QUERY);
+		stmt.setString(1, table.getName());
+
+		ResultSet rs = stmt.executeQuery();
+		while (rs.next()) {
+
+			String data_type = rs.getString("data_type");
+			Column column = table.getColumnByName(rs.getString("column_name"));
+			column.setDataType(data_type);
+			if(data_type.equals("timestamp with time zone")) {
+				column.setJdbcIDOfDataType(Types.TIMESTAMP_WITH_TIMEZONE);
+			}else if(data_type.equals("USER-DEFINED")) {
+				String udt_name = rs.getString("udt_name");
+				if(udt_name.equals("geometry")) {
+					column.setDataType(udt_name);
+				}
+			}
+			
+			
+		}
+		
+		
+	}
+	
+	/**
+	 * extract Table's FK
+	 * 
+	 * @param conn Connection
+	 * @param catalog Catalog
+	 * @param schema Schema
+	 * @param table Table
+	 * @throws SQLException e
+	 */
+	protected void buildTableFKs(final Connection conn, final Catalog catalog, final Schema schema,
+			final Table table) throws SQLException {
+		super.buildTableFKs(conn, catalog, schema, table);
+		
+		List<FK> fks = table.getFks();
+		for (FK fk : fks) {
+			if(fk.getUpdateRule() == DatabaseMetaData.importedKeyCascade) {
+				fk.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
+			}
+		}
 		
 	}
 	
@@ -322,6 +772,18 @@ public class PostgreSQLSchemaFetcher extends AbstractJDBCSchemaFetcher{
 			ddl = rs.getString("view_ddl");
 		}
 		if (ddl != "") {
+			ddl = ddl.replaceAll("::\\w+|::\"\\w+\"", "");
+			Pattern p1 = Pattern.compile("\"\\w+\"+\\(");
+			Pattern p2 = Pattern.compile("\\w+");
+			
+			Matcher m1 = p1.matcher(ddl);
+			while(m1.find()) {
+				String s = m1.group();
+				Matcher m2 = p2.matcher(s);
+				while(m2.find()) {
+					ddl = ddl.replace(s, m2.group()+"(");
+				}
+			}
 			return ddl;
 		}
 		return null;

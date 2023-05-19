@@ -29,7 +29,18 @@
  */
 package com.cubrid.cubridmigration.postgresql;
 
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
+import com.cubrid.cubridmigration.core.common.DBUtils;
+import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
+import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
+import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
+import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 
 /**
  * PostgreSQLSQLHelper Description
@@ -40,7 +51,9 @@ import com.cubrid.cubridmigration.core.sql.SQLHelper;
  */
 public class PostgreSQLSQLHelper extends SQLHelper{
 	
-private static final PostgreSQLSQLHelper INS = new PostgreSQLSQLHelper();
+	private static final PostgreSQLSQLHelper INS = new PostgreSQLSQLHelper();
+	private static final String NEWLINE = "\n";
+	private static final Logger LOG = LogUtil.getLogger(PostgreSQLSQLHelper.class);
 	
 	public static PostgreSQLSQLHelper getInstance(String version) {
 		return INS;
@@ -61,4 +74,5 @@ private static final PostgreSQLSQLHelper INS = new PostgreSQLSQLHelper();
 		return null;
 	}
 
+	
 }
