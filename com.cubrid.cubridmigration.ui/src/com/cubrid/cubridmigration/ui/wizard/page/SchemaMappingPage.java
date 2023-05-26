@@ -52,6 +52,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -61,12 +62,15 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.PlatformUI;
 
+import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.celleditor.EditableComboBoxCellEditor;
+import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizard;
 
@@ -77,7 +81,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	private MigrationWizard wizard = null;
 	private MigrationConfiguration config = null;
 	
-	private String[] propertyList = {Messages.sourceSchema, Messages.msgNote, Messages.msgSrcType, Messages.targetSchema, Messages.msgTarType};
+	private String[] propertyList = {"", Messages.sourceSchema, Messages.msgNote, Messages.msgSrcType, Messages.targetSchema, Messages.msgTarType};
 	private String[] tarSchemaNameArray =  null;
 	
 	Catalog srcCatalog;
@@ -226,14 +230,16 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				
 				switch (columnIndex) {
 				case 0:
-					return obj.getSrcSchema();
+					return null;
 				case 1:
-					return obj.getNote();
+					return obj.getSrcSchema();
 				case 2:
-					return obj.getSrcDBType();
+					return obj.getNote();
 				case 3:
-					return obj.getTarSchema();
+					return obj.getSrcDBType();
 				case 4:
+					return obj.getTarSchema();
+				case 5:
 					return obj.getTarDBType();
 				default:
 					return null;
@@ -243,6 +249,25 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			
 			@Override
 			public Image getColumnImage(Object element, int columnIndex) {
+				SrcTable srcTable  = (SrcTable) element;
+				
+				if (columnIndex == 0) {
+					if (firstVisible) {
+						if (srcTable.getNote().equals(Messages.msgMainSchema) || srcTable.isSelected()) {
+							srcTable.setSelected(true);
+							return CompositeUtils.CHECK_IMAGE;
+						} else {
+							srcTable.setSelected(false);
+							return CompositeUtils.UNCHECK_IMAGE;
+						}
+					} else {
+						if (srcTable.isSelected()) {
+							return CompositeUtils.CHECK_IMAGE;
+						} else {
+							return CompositeUtils.UNCHECK_IMAGE;
+						}
+					}
+				}
 				return null;
 			}
 			
@@ -264,6 +289,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		
 		TableLayout tableLayout = new TableLayout();
 		
+		tableLayout.addColumnData(new ColumnWeightData(5, true));
 		tableLayout.addColumnData(new ColumnWeightData(20, true));
 		tableLayout.addColumnData(new ColumnWeightData(13, true));
 		tableLayout.addColumnData(new ColumnWeightData(20, true));
@@ -274,23 +300,33 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		srcTableViewer.getTable().setLinesVisible(true);
 		srcTableViewer.getTable().setHeaderVisible(true);
 		
+		TableColumn col1 = new TableColumn(srcTableViewer.getTable(), SWT.LEFT);
 		TableColumn col2 = new TableColumn(srcTableViewer.getTable(), SWT.LEFT);
 		TableColumn col3 = new TableColumn(srcTableViewer.getTable(), SWT.LEFT);
 		TableColumn col4 = new TableColumn(srcTableViewer.getTable(), SWT.LEFT);
 		TableColumn col5 = new TableColumn(srcTableViewer.getTable(), SWT.LEFT);
 		TableColumn col6 = new TableColumn(srcTableViewer.getTable(), SWT.LEFT);
 		
-		col2.setText(propertyList[0]);
-		col3.setText(propertyList[1]);
-		col4.setText(propertyList[2]);
-		col5.setText(propertyList[3]);
-		col6.setText(propertyList[4]);
+		final SelectionListener[] selectionListeners = new SelectionListener[] {
+				new CheckBoxColumnSelectionListener(),
+				null,
+				null,
+				null,
+				null,
+				null};
+		CompositeUtils.setTableColumnSelectionListener(srcTableViewer, selectionListeners);
 		
+		col1.setImage(CompositeUtils.getCheckImage(false));
+		col2.setText(propertyList[1]);
+		col3.setText(propertyList[2]);
+		col4.setText(propertyList[3]);
+		col5.setText(propertyList[4]);
+		col6.setText(propertyList[5]);
 	}
 	
 	private void getSchemaValues() {
 		Catalog targetCatalog = wizard.getTargetCatalog();
-		Catalog sourceCatalog = wizard.getSourceCatalog();
+		Catalog sourceCatalog = wizard.getOriginalSourceCatalog();
 		
 		List<Schema> targetSchemaList = targetCatalog.getSchemas();
 		List<Schema> sourceSchemaList = sourceCatalog.getSchemas();
@@ -323,37 +359,38 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		comboEditor = new EditableComboBoxCellEditor(srcTableViewer.getTable(), tarSchemaNameArray);
 		
 		CellEditor[] editors = new CellEditor[] {
+				new CheckboxCellEditorFactory().getCellEditor(srcTableViewer.getTable()),
 				null,
 				null,
 				null,
-				comboEditor,
+				tarCatalog.isDBAGroup() ? comboEditor : null,
 				null
 		};
-		
-		if (!tarCatalog.isDBAGroup()) {
-			return;
-		}
 		
 		srcTableViewer.setCellEditors(editors);
 		srcTableViewer.setCellModifier(new ICellModifier() {
 			
 			@Override
 			public void modify(Object element, String property, Object value) {
-				
 				TableItem tabItem = (TableItem) element;
 				SrcTable srcTable = (SrcTable) tabItem.getData();
 				
-				if (property.equals(propertyList[3])) {
+				if (property.equals(propertyList[4])) {
 					srcTable.setTarSchema(returnValue((Integer) value, tabItem));
+					addSelectCheckboxValue();
+					srcTableViewer.refresh();
+				} else if (property.equals(propertyList[0])) {
+					tabItem.setImage(CompositeUtils.getCheckImage(!srcTable.isSelected));
+					srcTable.setSelected(!srcTable.isSelected);
 				}
-				
-				srcTableViewer.refresh();
 			}
 			
 			@Override
 			public Object getValue(Object element, String property) {
-				if (property.equals(propertyList[3])) {
+				if (property.equals(propertyList[4])) {
 					return returnIndex(element);
+				} else if (property.equals(propertyList[0])) {
+					return true;
 				} else {
 					return null;
 				}
@@ -361,7 +398,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			
 			@Override
 			public boolean canModify(Object element, String property) {
-				if (property.equals(propertyList[3])) {
+				if (property.equals(propertyList[4]) || property.equals(propertyList[0])) {
 					return true;
 				} else {
 					return false;
@@ -392,17 +429,29 @@ public class SchemaMappingPage extends MigrationWizardPage {
 					return testValue;
 				}
 			}
+			
+			private void addSelectCheckboxValue() {
+				TableItem[] tableItems = srcTableViewer.getTable().getItems();
+				for (int i = 0; i < tableItems.length; i++) {
+					if (tableItems[i].getImage().equals(CompositeUtils.CHECK_IMAGE)) {
+						srcTableList.get(i).setSelected(true);
+					} else {
+						srcTableList.get(i).setSelected(false);
+					}
+				}
+			}
 		});
 	}
 	
-	private void setOfflineEditor() {
+	private void setOfflineEditor(boolean isAddUserSchema) {
 		textEditor = new TextCellEditor(srcTableViewer.getTable());
 		
 		CellEditor[] editors = new CellEditor[] {
+				new CheckboxCellEditorFactory().getCellEditor(srcTableViewer.getTable()),
 				null,
 				null,
 				null,
-				textEditor,
+				isAddUserSchema ? textEditor : null,
 				null
 		};
 		
@@ -411,7 +460,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 
 			@Override
 			public boolean canModify(Object element, String property) {
-				if (property.equals(propertyList[3])) {
+				if (property.equals(propertyList[4]) || property.equals(propertyList[0])) {
 					return true;
 				} else {
 					return false;
@@ -420,8 +469,10 @@ public class SchemaMappingPage extends MigrationWizardPage {
 
 			@Override
 			public Object getValue(Object element, String property) {
-				if (property.equals(propertyList[3])) {
+				if (property.equals(propertyList[4])) {
 					return ((SrcTable) element).getTarSchema();
+				} else if (property.equals(propertyList[0])) {
+					return true;
 				} else {
 					return null;
 				}
@@ -432,28 +483,38 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				TableItem tabItem = (TableItem) element;
 				SrcTable srcTable = (SrcTable) tabItem.getData();
 				
-				if (property.equals(propertyList[3])) {
+				if (property.equals(propertyList[4])) {
 					srcTable.setTarSchema((String) value);
+					addSelectCheckboxValue();
+					srcTableViewer.refresh();
+				} else if (property.equals(propertyList[0])) {
+					tabItem.setImage(CompositeUtils.getCheckImage(!srcTable.isSelected));
+					srcTable.setSelected(!srcTable.isSelected);
 				}
-				srcTableViewer.refresh();
+			}
+			
+			private void addSelectCheckboxValue() {
+				TableItem[] tableItems = srcTableViewer.getTable().getItems();
+				for (int i = 0; i < tableItems.length; i++) {
+					if (tableItems[i].getImage().equals(CompositeUtils.CHECK_IMAGE)) {
+						srcTableList.get(i).setSelected(true);
+					} else {
+						srcTableList.get(i).setSelected(false);
+					}
+				}
 			}
 		});
 	}
 	
 	private void setOfflineSchemaMappingPage() {
 		setOfflineData();
-		
-		config.isAddUserSchema();
-		
-		if (config.isAddUserSchema()) {
-			setOfflineEditor();
-		}
+		setOfflineEditor(config.isAddUserSchema());
 	}
 	
 	private void setOfflineData() {
-		srcCatalog = wizard.getSourceCatalog();
+		srcCatalog = wizard.getOriginalSourceCatalog().createCatalog();
 		srcSchemaList = srcCatalog.getSchemas();
-		Map<String, String> scriptSchemaMap = config.getScriptSchemaMapping();
+		Map<String, Schema> scriptSchemaMap = config.getScriptSchemaMapping();
 		
 		for (Schema schema : srcSchemaList) {
 			SrcTable srcTable = new SrcTable();
@@ -470,7 +531,12 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			
 			if (scriptSchemaMap.size() != 0) {
 				logger.info("offline script schema");
-				srcTable.setTarSchema(scriptSchemaMap.get(srcTable.getSrcSchema()));
+				Schema scriptSchema = scriptSchemaMap.get(srcTable.getSrcSchema()); 
+				if (scriptSchema != null) {
+					srcTable.setTarSchema(scriptSchemaMap.get(srcTable.getSrcSchema()).getTargetSchemaName());
+					srcTable.setSelected(scriptSchemaMap.get(srcTable.getSrcSchema()).isMigration());
+				}
+				
 				if (srcTable.getTarSchema() == null || srcTable.getTarSchema().isEmpty()) {
 					srcTable.setTarSchema(srcTable.getSrcSchema());
 				}
@@ -489,24 +555,19 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		setOnlineData();
 		getSchemaValues();
 		
-//		int tarSchemaSize = getMigrationWizard().getTarCatalogSchemaCount();
-		
-		tarCatalog.isDbHasUserSchema();
-		
 		if (tarCatalog.isDbHasUserSchema()) {
 			setOnlineEditor();
 		}
 	}
 	
 	private void setOnlineData() {
-		srcCatalog = wizard.getSourceCatalog();
+		srcCatalog = wizard.getOriginalSourceCatalog().createCatalog();
 		tarCatalog = wizard.getTargetCatalog();
 		
-		//TODO: extract schema names and DB type
 		srcSchemaList = srcCatalog.getSchemas();
 		tarSchemaList = tarCatalog.getSchemas();
 		
-		Map<String, String> scriptSchemaMap = config.getScriptSchemaMapping();
+		Map<String, Schema> scriptSchemaMap = config.getScriptSchemaMapping();
 		
 		for (Schema schema : srcSchemaList) {
 			SrcTable srcTable = new SrcTable();
@@ -525,17 +586,19 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			if (scriptSchemaMap.size() != 0 && srcCatalog.getDatabaseType().getID() == 1) {
 				logger.info("script schema");
 				
-				srcTable.setTarSchema(scriptSchemaMap.get(srcTable.getSrcSchema()).toUpperCase());
+				Schema scriptSchema = scriptSchemaMap.get(srcTable.getSrcSchema());
+				String tarSchemaName = null;
+				if (scriptSchema != null) {
+					srcTable.setTarSchema(scriptSchema.getTargetSchemaName().toUpperCase());
+					tarSchemaName = scriptSchema.getTargetSchemaName().toUpperCase();
+					srcTable.setSelected(scriptSchemaMap.get(srcTable.getSrcSchema()).isMigration());
+				}
 				
-				String tarSchemaName = scriptSchemaMap.get(srcTable.getSrcSchema()).toUpperCase();
-				
-				if (tarSchemaName.isEmpty() || tarSchemaName == null) {
+				if (tarSchemaName == null || tarSchemaName.isEmpty()) {
 					srcTable.setTarSchema(tarCatalog.getName());
 				}
 				
-				
 				logger.info("srcTable target schema : " + srcTable.getTarSchema());
-				
 			} else {
 				int version = tarCatalog.getVersion().getDbMajorVersion() * 10 + tarCatalog.getVersion().getDbMinorVersion();
 				
@@ -556,7 +619,12 @@ public class SchemaMappingPage extends MigrationWizardPage {
 
 		if (firstVisible) {
 			setTitle(Messages.schemaMappingPageTitle);
-			setDescription(Messages.schemaMappingPageDescription);
+			if ((config.targetIsOnline() && !wizard.getTargetCatalog().isDBAGroup())
+					|| (!config.targetIsOnline()) && !config.isAddUserSchema()) {
+				setDescription(Messages.schemaMappingPageDescriptionUncorrectable);
+			} else {
+				setDescription(Messages.schemaMappingPageDescription);				
+			}
 			
 			if (!config.targetIsOnline()) {
 				setOfflineSchemaMappingPage();
@@ -576,6 +644,11 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			return;
 		}
 		if (isGotoNextPage(event)) {
+			Catalog originalSrcCatlog = wizard.getOriginalSourceCatalog(); 
+			if (originalSrcCatlog.getSchemas().size() != srcCatalog.getSchemas().size()) {
+				srcCatalog.getSchemas().clear();
+				srcCatalog.setSchemas(originalSrcCatlog.getSchemas());
+			}
 			if (config.targetIsOnline()) {
 				event.doit = saveOnlineData();
 			} else {
@@ -585,27 +658,33 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	}
 	
 	private boolean saveOnlineData() {
-		List<String> checkNewSchemaDuplicate = new ArrayList<String>();
+		if (!isSelectCheckbox()) {
+			MessageDialog.openError(getShell(), Messages.msgError, Messages.msgErrEmptySchemaCheckbox);
+			return false;
+		}
 		
+		List<String> checkNewSchemaDuplicate = new ArrayList<String>();
 		for (SrcTable srcTable : srcTableList) {
 			if (!(tarCatalog.isDbHasUserSchema())) {
 				srcTable.setTarSchema(null);
-				
 				continue;
 			}
 			
 			if (srcTable.getTarSchema().isEmpty() || isDefaultMessage(srcTable.getTarSchema())) {
 				MessageDialog.openError(getShell(), Messages.msgError, Messages.msgErrEmptySchemaName);
-				
 				return false;
 			}
 			
-			String targetSchemaName = srcTable.getTarSchema();
+			if (!srcTable.isSelected) {
+				Schema srcSchema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
+				srcCatalog.removeOneSchema(srcSchema);
+				continue;
+			}
 			
 			logger.info("src schema : " + srcTable.getSrcSchema());
 			logger.info("tar schema : " + srcTable.getTarSchema());
 			
-			Schema targetSchema = tarCatalog.getSchemaByName(targetSchemaName);
+			Schema targetSchema = tarCatalog.getSchemaByName(srcTable.getTarSchema());
 			
 			if (targetSchema != null) {
 				Schema srcSchema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
@@ -630,11 +709,18 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				logger.info("-------------------------------------------");
 			}
 		}
+		wizard.setSourceCatalog(srcCatalog);
+		getMigrationWizard().setSourceDBNode(srcCatalog);
 		
 		return true;
 	}
 	
 	private boolean saveOfflineData(boolean addUserSchema, boolean splitSchema) {
+		if (!isSelectCheckbox()) {
+			MessageDialog.openError(getShell(), Messages.msgError, Messages.msgErrEmptySchemaCheckbox);
+			return false;
+		}
+		
 		List<Schema> targetSchemaList = new ArrayList<Schema>();
 		schemaFullName = new HashMap<String, String>();
 		tableFullName = new HashMap<String, String>();
@@ -648,11 +734,17 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		SchemaFileListFullName = new HashMap<String, String>();
 		
 		for (SrcTable srcTable : srcTableList) {
-			if (addUserSchema && (srcTable.getTarSchema().isEmpty() || srcTable.getTarSchema() == null 
+			if (addUserSchema && srcTable.isSelected() && (srcTable.getTarSchema().isEmpty() || srcTable.getTarSchema() == null 
 					|| srcTable.getTarSchema().equals(Messages.msgTypeSchema))) {
 				MessageDialog.openError(getShell(), Messages.msgError, Messages.msgErrEmptySchemaName);
 				
 				return false;
+			}
+			
+			if (!srcTable.isSelected) {
+				Schema srcSchema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
+				srcCatalog.removeOneSchema(srcSchema);
+				continue;
 			}
 
 			Schema schema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
@@ -689,6 +781,10 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		config.setTargetSerialFileName(serialFullName);
 		config.setTargetUpdateStatisticFileName(updateStatisticFullName);
 		config.setTargetSchemaFileListName(SchemaFileListFullName);
+		
+		wizard.setSourceCatalog(srcCatalog);
+		getMigrationWizard().setSourceDBNode(srcCatalog);
+		
 		return true;
 	}
 	
@@ -843,6 +939,10 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		StringBuffer buffer = new StringBuffer();
 		try {
 			for (SrcTable srcTable : srcTableList) {
+				if (!srcTable.isSelected) {
+					continue;
+				}
+				
 				if (config.isSplitSchema()) {
 					File tableFile = new File(tableFullName.get(srcTable.getTarSchema()));
 					File viewFile = new File(viewFullName.get(srcTable.getTarSchema()));
@@ -898,6 +998,24 @@ public class SchemaMappingPage extends MigrationWizardPage {
 							+ Messages.confirmMessage);
 		}
 		return true;
+	}
+	
+	private boolean isSelectCheckbox() {
+		TableItem[] tableItems = srcTableViewer.getTable().getItems();
+		for (int i = 0; i < tableItems.length; i++) {
+			if (tableItems[i].getImage().equals(CompositeUtils.CHECK_IMAGE)) {
+				srcTableList.get(i).setSelected(true);
+			} else {
+				srcTableList.get(i).setSelected(false);
+			}
+		}
+		
+		for (SrcTable srcTable : srcTableList) {
+			if (srcTable.isSelected) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private boolean isDefaultMessage(String enterSchema) {
