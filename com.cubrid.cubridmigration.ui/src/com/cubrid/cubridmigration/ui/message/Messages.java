@@ -242,6 +242,7 @@ public class Messages extends
 	public static String confrimExportFKs;
 	public static String confrimExportIndexs;
 	public static String confrimExportSerial;
+	public static String confrimExportSynonym;
 	public static String confrimExportTables;
 	public static String confrimExportViews;
 	public static String confrimIndex;
@@ -251,6 +252,7 @@ public class Messages extends
 	public static String confrimPk;
 	public static String confrimFk;
 	public static String confrimSerial;
+	public static String confrimSynonym;
 	public static String confrimUpdateStatistic;
 	public static String confrimSQLTables;
 	public static String cUBRID2CUBRID;
@@ -293,6 +295,7 @@ public class Messages extends
 	public static String errCascadeOnUpdateNotSupported;
 	public static String errConnectDatabase;
 	public static String errDuplicateSequenceName;
+	public static String errDuplicateSynonymName;
 	public static String errErrorFileNotFound;
 	public static String errInvalidChar;
 	public static String errInvalidDate;
@@ -370,6 +373,7 @@ public class Messages extends
 	public static String labelTreeObjProcedure;
 	public static String labelTreeObjSerial;
 	public static String labelTreeObjSql;
+	public static String labelTreeObjSynonym;
 	public static String labelTreeObjTable;
 	public static String labelTreeObjTrigger;
 	public static String labelTreeObjView;
@@ -451,6 +455,11 @@ public class Messages extends
 	public static String lblStartNow;
 	public static String lblStartTime;
 	public static String lblStartValue;
+	public static String lblSynonymName;
+	public static String lblSynonymOwnerName;
+	public static String lblSyonymPublic;
+	public static String lblSynonymObjectName;
+	public static String lblSynonymObjectOwnerName;
 	public static String lblTableName;
 	public static String lblTarget;
 	public static String lblTargetTableName;
@@ -531,6 +540,7 @@ public class Messages extends
 	public static String msgErrDupIndexName;
 	public static String msgErrDuplicatedScriptName;
 	public static String msgErrDupSerialName;
+	public static String msgErrDupSynonymName;
 	public static String msgErrDupViewName;
 	public static String msgErrEmptyIncrement;
 	public static String msgErrEmptyMax;
@@ -559,6 +569,7 @@ public class Messages extends
 	public static String msgErrInvalidMigrationHistory;
 	public static String msgErrInvalidSchemaName;
 	public static String msgErrInvalidSerialName;
+	public static String msgErrInvalidSynonymName;
 	public static String msgErrInvalidTableName;
 	public static String msgErrInvalidViewName;
 	public static String msgErrMaxMin;
@@ -653,6 +664,7 @@ public class Messages extends
 	public static String objectMapPageTabFolderErrViewName;
 	public static String objectMapPageTabFolderSequences;
 	public static String objectMapPageTabFolderSqls;
+	public static String objectMapPageTabFolderSynonyms;
 	public static String objectMapPageTabFolderTables;
 	public static String objectMapPageTabFolderViews;
 	public static String objectMapPageTitle;
@@ -706,6 +718,7 @@ public class Messages extends
 	public static String tabTitleSourceFK;
 	public static String tabTitleSourceIndex;
 	public static String tabTitleSourceSerial;
+	public static String tabTitleSourceSynonym;
 	public static String tabTitleSourceTable;
 	public static String tabTitleSourceTableDes;
 	public static String tabTitleSourceView;
@@ -714,6 +727,7 @@ public class Messages extends
 	public static String tabTitleTargetFK;
 	public static String tabTitleTargetIndex;
 	public static String tabTitleTargetSerial;
+	public static String tabTitleTargetSynonym;
 	public static String tabTitleTargetTable;
 	public static String tabTitleTargetTableDes;
 	public static String tabTitleTargetView;

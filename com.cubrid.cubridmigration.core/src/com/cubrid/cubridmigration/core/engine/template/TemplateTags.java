@@ -97,6 +97,10 @@ public final class TemplateTags {
 	public static final String ATTR_SIZE = "size";
 	public static final String ATTR_START = "start";
 	public static final String ATTR_SUB_TYPE = "sub_type";
+	public static final String ATTR_SYNONYM_OBJECT = "object";
+	public static final String ATTR_SYNONYM_OBJECT_OWNER = "object_owner";
+	public static final String ATTR_SYNONYM_OBJECT_TARGET = "object_target";
+	public static final String ATTR_SYNONYM_OBJECT_TARGET_OWNER = "object_target_owner";
 	public static final String ATTR_TARGET = "target";
 	public static final String ATTR_TARGET_SCHEMA = "target_schema";
 	public static final String ATTR_TARGET_OWNER = "target_owner";
@@ -147,6 +151,8 @@ public final class TemplateTags {
 	public static final String TAG_SCHEMA_INFO = "schema_info";
 	public static final String TAG_SEQUENCE = "sequence";
 	public static final String TAG_SEQUENCES = "sequences";
+	public static final String TAG_SYNONYM = "synonym";
+	public static final String TAG_SYNONYMS = "synonyms";
 	public static final String TAG_SOURCE = "source";
 	public static final String TAG_SQLTABLE = "sqlTable";
 	public static final String TAG_SQLTABLES = "sqlTables";

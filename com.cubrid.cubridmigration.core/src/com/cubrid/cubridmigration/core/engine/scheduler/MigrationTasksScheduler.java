@@ -47,6 +47,7 @@ import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceViewConfig;
 import com.cubrid.cubridmigration.core.engine.exception.BreakMigrationException;
@@ -61,6 +62,8 @@ import com.cubrid.cubridmigration.core.engine.task.MigrationTaskFactory;
  */
 public class MigrationTasksScheduler {
 
+	private final int USERSCHEMA_VERSION = 112;
+	
 	protected MigrationTaskFactory taskFactory;
 	protected MigrationContext context;
 
@@ -91,6 +94,12 @@ public class MigrationTasksScheduler {
 		createSchema();
 		createTables();
 		createViews();
+		if (config.targetIsOnline() 
+				&& Integer.parseInt(config.getTargetDBVersion()) < USERSCHEMA_VERSION) {
+			createNoSupportSynonyms();
+		} else {
+			createSynonyms();
+		}
 		alterViews();
 		createSerials();
 
@@ -215,6 +224,7 @@ public class MigrationTasksScheduler {
 					PathUtils.deleteFile(new File(config.getTargetFkFileName(schemaName)));
 					PathUtils.deleteFile(new File(config.getTargetSerialFileName(schemaName)));
 					PathUtils.deleteFile(new File(config.getTargetSchemaFileListName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetSynonymFileName(schemaName)));
 				} else {
 					PathUtils.deleteFile(new File(config.getTargetSchemaFileName(schemaName)));
 				}
@@ -458,6 +468,28 @@ public class MigrationTasksScheduler {
 		List<SourceSequenceConfig> sequences = config.getExpSerialCfg();
 		for (SourceSequenceConfig sq : sequences) {
 			executeTask(taskFactory.createExportSequenceTask(sq));
+		}
+		await();
+	}
+	
+	/**
+	 * Schedule export synonym tasks.
+	 * 
+	 */
+	protected void createSynonyms() {
+		MigrationConfiguration config = context.getConfig();
+		List<SourceSynonymConfig> synonyms = config.getExpSynonymCfg();
+		for (SourceSynonymConfig sn : synonyms) {
+			executeTask(taskFactory.createExportSynonymTask(sn));
+		}
+		await();
+	}
+	
+	protected void createNoSupportSynonyms() {
+		MigrationConfiguration config = context.getConfig();
+		List<SourceSynonymConfig> synonyms = config.getExpSynonymCfg();
+		for (SourceSynonymConfig sn : synonyms) {
+			executeTask(taskFactory.createExportNoSupportSynonymTask(sn));
 		}
 		await();
 	}

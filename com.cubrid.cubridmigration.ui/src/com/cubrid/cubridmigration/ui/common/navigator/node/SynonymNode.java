@@ -27,54 +27,31 @@
  * OF SUCH DAMAGE. 
  *
  */
-package com.cubrid.cubridmigration.core.dbobject;
+package com.cubrid.cubridmigration.ui.common.navigator.node;
 
-import java.io.Serializable;
+import com.cubrid.common.ui.navigator.DefaultCUBRIDNode;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 
 /**
- * DBObject is the base class of
- * Table,View,Sequence,Column,Index,Partition,Trigger,Procedure,PK,FK,and etc...
- * 
- * @author Kevin Cao
- * @version 1.0 - 2011-11-7 created by Kevin Cao
+ * SynonymNode
+ * @author Dongmin Kim
  */
-public abstract class DBObject implements
-		Serializable {
+public class SynonymNode extends 
+		DefaultCUBRIDNode {
 
-	private static final long serialVersionUID = -4165580169748817694L;
-	public final static String OBJ_TYPE_SCHEMA = "schema";
-	public final static String OBJ_TYPE_TABLE = "table";
-	public final static String OBJ_TYPE_PARTITION = "table partition";
-	public final static String OBJ_TYPE_COLUMN = "column";
-	public final static String OBJ_TYPE_VIEW = "view";
-	public final static String OBJ_TYPE_PK = "primary key";
-	public final static String OBJ_TYPE_FK = "foreign key";
-	public final static String OBJ_TYPE_INDEX = "index";
-	public final static String OBJ_TYPE_SEQUENCE = "sequence";
-	public final static String OBJ_TYPE_TRIGGER = "trigger";
-	public final static String OBJ_TYPE_PROCEDURE = "procedure";
-	public final static String OBJ_TYPE_FUNCTION = "function";
-	public final static String OBJ_TYPE_RECORD = "record";
-	public final static String OBJ_TYPE_SYNONYM = "synonym";
-
-	/**
-	 * Retrieves the Object's name
-	 * 
-	 * @return String name
-	 */
-	public abstract String getName();
-
-	/**
-	 * Retrieves the Object's type table/view/index ......
-	 * 
-	 * @return String
-	 */
-	public abstract String getObjType();
-
-	/**
-	 * Retrieves the Object's DDL
-	 * 
-	 * @return String DDL
-	 */
-	public abstract String getDDL();
+	Synonym synonym;
+	
+	public Synonym getSynonym() {
+		return synonym;
+	}
+	
+	public void setSynonym(Synonym synonym) {
+		this.synonym = synonym;
+	}
+	
+	public SynonymNode(String id, String label) {
+		super(id, label, "icon/db/synonym_item.png");
+		setType(CubridNodeType.USER_SYNONYM);
+		setContainer(false);
+	}
 }

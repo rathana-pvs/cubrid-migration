@@ -68,6 +68,7 @@ import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.TableOrView;
 import com.cubrid.cubridmigration.core.dbobject.Trigger;
@@ -1792,6 +1793,16 @@ public final class CUBRIDSchemaFetcher extends
 		}
 	}
 	
+	protected void buildSynonym(Connection conn, Catalog catalog, Schema schema, 
+			IBuildSchemaFilter filter) throws SQLException {
+		if (getDBVersion(conn) < USERSCHEMA_VERSION) {
+			schema.setSynonymList(new ArrayList<Synonym>());
+			return;
+		}
+		List<Synonym> synonymList = getAllSynonym(conn, schema);
+		schema.setSynonymList(synonymList);
+	}
+	
 	/**
 	 * Get all CUBRID View names
 	 * 
@@ -2029,6 +2040,45 @@ public final class CUBRIDSchemaFetcher extends
 			}
 
 			return triggers;
+		} finally {
+			Closer.close(rs);
+			Closer.close(stmt);
+		}
+	}
+	
+	private List<Synonym> getAllSynonym(Connection conn, Schema schema) throws SQLException {
+		PreparedStatement stmt = null;
+		ResultSet rs = null; //NOPMD
+		
+		int dbVersion = getDBVersion(conn);
+		if (dbVersion < USERSCHEMA_VERSION) {
+			return null;
+		}
+		
+		try {
+			String sql = "SELECT synonym_name, synonym_owner_name, is_public_synonym,"
+					 + " target_name, target_owner_name, comment" 
+					 + " FROM db_synonym"
+					 + " WHERE synonym_owner_name=?";
+			
+			stmt = conn.prepareStatement(sql);
+			stmt.setString(1, schema.getName());
+			rs = stmt.executeQuery();
+			List<Synonym> synonyms = new ArrayList<Synonym>();
+
+			while (rs.next()) {
+				Synonym synonym = factory.createSynonym();
+				synonym.setName(rs.getString("synonym_name"));
+				synonym.setOwner(rs.getString("synonym_owner_name"));
+				synonym.setPublic(isYes(rs.getString("is_public_synonym")));
+				synonym.setObjectName(rs.getString("target_name"));
+				synonym.setObjectOwner(rs.getString("target_owner_name"));
+				synonym.setComment(rs.getString("comment"));
+				synonym.setDDL(CUBRIDSQLHelper.getInstance(null).getSynonymDDL(synonym, true));
+				synonyms.add(synonym);
+			}
+
+			return synonyms;
 		} finally {
 			Closer.close(rs);
 			Closer.close(stmt);

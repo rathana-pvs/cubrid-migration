@@ -68,12 +68,14 @@ import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.Trigger;
 import com.cubrid.cubridmigration.core.dbobject.Version;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
+import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 import com.cubrid.cubridmigration.oracle.OracleDataTypeHelper;
 
 /**
@@ -144,6 +146,8 @@ public final class OracleSchemaFetcher extends
 
 	private static final String SQL_SHOW_SEQUENCES = "SELECT S.* FROM ALL_SEQUENCES S "
 			+ "WHERE S.SEQUENCE_OWNER=? AND NOT S.SEQUENCE_NAME LIKE 'BIN$%' ";
+	
+	private static final String SQL_SHOW_SYNONYM = "SELECT SYNONYM_NAME, TABLE_OWNER, TABLE_NAME, DB_LINK FROM USER_SYNONYMS";
 
 	private static final String SQL_SHOW_VIEW_QUERYTEXT = "SELECT TEXT from ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?";
 	
@@ -380,6 +384,44 @@ public final class OracleSchemaFetcher extends
 				seq.setDDL(getObjectDDL(conn, schema.getName(), sequenceName, OBJECT_TYPE_SEQUENCE));
 				seq.setOwner(schema.getName());
 				schema.addSequence(seq);
+			}
+		} finally {
+			Closer.close(rs);
+			Closer.close(stmt);
+		}
+	}
+	
+	protected void buildSynonym(Connection conn, Catalog catlog, Schema schema, 
+			IBuildSchemaFilter filter) throws SQLException {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("[IN]buildSynonym()");
+		}
+		PreparedStatement stmt = null; // NOPMD
+		ResultSet rs = null; // NOPMD
+		
+		try {
+			stmt = conn.prepareStatement(SQL_SHOW_SYNONYM);
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("[SQL]" + SQL_SHOW_SYNONYM + ", " + "1=" + schema.getName() + ", "
+						+ "2=" + schema.getName());
+			}
+
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				String synonymName = rs.getString("SYNONYM_NAME");
+				if (filter != null && filter.filter(schema.getName(), synonymName)) {
+					continue;
+				}
+				String targetOwnerName = rs.getString("TABLE_OWNER");
+				String targetName = rs.getString("TABLE_NAME");
+				Synonym synonym = factory.createSynonym();
+				synonym.setName(synonymName);
+				synonym.setOwner(schema.getName());
+				synonym.setPublic(false);
+				synonym.setObjectName(targetName);
+				synonym.setObjectOwner(targetOwnerName);
+				synonym.setDDL(CUBRIDSQLHelper.getInstance(null).getSynonymDDL(synonym, true));
+				schema.addSynonym(synonym);
 			}
 		} finally {
 			Closer.close(rs);

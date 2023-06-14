@@ -27,54 +27,85 @@
  * OF SUCH DAMAGE. 
  *
  */
-package com.cubrid.cubridmigration.core.dbobject;
-
-import java.io.Serializable;
+package com.cubrid.cubridmigration.core.engine.config;
 
 /**
- * DBObject is the base class of
- * Table,View,Sequence,Column,Index,Partition,Trigger,Procedure,PK,FK,and etc...
+ * SourceSynonymConfig Description
  * 
- * @author Kevin Cao
- * @version 1.0 - 2011-11-7 created by Kevin Cao
+ * @author CUBRID
  */
-public abstract class DBObject implements
-		Serializable {
+public class SourceSynonymConfig extends 
+		SourceConfig {
+	private String owner;
+	private String targetOwner;
+	private String objectName;
+	private String objectOwner;
+	private String objectTargetName;
+	private String objectTargetOwner;
+	private boolean isPublic;
+	private String comment;
+	
+	public String getOwner() {
+		return owner;
+	}
+	
+	public void setOwner(String owner) {
+		this.owner = owner;
+	}
+	
+	public String getTargetOwner() {
+		return targetOwner;
+	}
+	
+	public void setTargetOwner(String targetOwner) {
+		this.targetOwner = targetOwner;
+	}
 
-	private static final long serialVersionUID = -4165580169748817694L;
-	public final static String OBJ_TYPE_SCHEMA = "schema";
-	public final static String OBJ_TYPE_TABLE = "table";
-	public final static String OBJ_TYPE_PARTITION = "table partition";
-	public final static String OBJ_TYPE_COLUMN = "column";
-	public final static String OBJ_TYPE_VIEW = "view";
-	public final static String OBJ_TYPE_PK = "primary key";
-	public final static String OBJ_TYPE_FK = "foreign key";
-	public final static String OBJ_TYPE_INDEX = "index";
-	public final static String OBJ_TYPE_SEQUENCE = "sequence";
-	public final static String OBJ_TYPE_TRIGGER = "trigger";
-	public final static String OBJ_TYPE_PROCEDURE = "procedure";
-	public final static String OBJ_TYPE_FUNCTION = "function";
-	public final static String OBJ_TYPE_RECORD = "record";
-	public final static String OBJ_TYPE_SYNONYM = "synonym";
+	public String getObjectName() {
+		return objectName;
+	}
 
-	/**
-	 * Retrieves the Object's name
-	 * 
-	 * @return String name
-	 */
-	public abstract String getName();
+	public void setObjectName(String objectName) {
+		this.objectName = objectName;
+	}
 
-	/**
-	 * Retrieves the Object's type table/view/index ......
-	 * 
-	 * @return String
-	 */
-	public abstract String getObjType();
+	public String getObjectOwner() {
+		return objectOwner;
+	}
 
-	/**
-	 * Retrieves the Object's DDL
-	 * 
-	 * @return String DDL
-	 */
-	public abstract String getDDL();
+	public void setObjectOwner(String objectOwner) {
+		this.objectOwner = objectOwner;
+	}
+
+	public String getObjectTargetName() {
+		return objectTargetName;
+	}
+
+	public void setObjectTargetName(String objectTargetName) {
+		this.objectTargetName = objectTargetName;
+	}
+
+	public String getObjectTargetOwner() {
+		return objectTargetOwner;
+	}
+
+	public void setObjectTargetOwner(String objectTargetOwner) {
+		this.objectTargetOwner = objectTargetOwner;
+	}
+
+	public boolean isPublic() {
+		return isPublic;
+	}
+	
+	public void setPublic(boolean isPublic) {
+		this.isPublic = isPublic;
+	}
+	
+	public String getComment() {
+		return comment;
+	}
+	
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
 }

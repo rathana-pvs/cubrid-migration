@@ -49,6 +49,7 @@ import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
@@ -439,6 +440,19 @@ public final class MigrationTemplateHandler extends
 		}
 		config.addTargetSerialSchema(seq);
 	}
+	
+	/**
+	 * @param attributes of node
+	 */
+	private void parseTargetSynonym(Attributes attributes) {
+		Synonym syn = new Synonym();
+		syn.setName(attributes.getValue(TemplateTags.ATTR_NAME));
+		syn.setOwner(attributes.getValue(TemplateTags.ATTR_OWNER));
+		syn.setObjectName(attributes.getValue(TemplateTags.ATTR_SYNONYM_OBJECT));
+		syn.setObjectOwner(attributes.getValue(TemplateTags.ATTR_SYNONYM_OBJECT_OWNER));
+		syn.setPublic(false);
+		config.addTargetSynonymSchema(syn);
+	}
 
 	/**
 	 * @param attributes of node
@@ -663,6 +677,15 @@ public final class MigrationTemplateHandler extends
 					attributes.getValue(TemplateTags.ATTR_TARGET));
 			ssc.setAutoSynchronizeStartValue(getBoolean(
 					attributes.getValue(TemplateTags.ATTR_AUTO_SYNCHRONIZE_START_VALUE), true));
+		} else if (TemplateTags.TAG_SYNONYM.equals(qName)) {
+			config.addExpSynonymCfg(attributes.getValue(TemplateTags.ATTR_OWNER),
+					attributes.getValue(TemplateTags.ATTR_NAME),
+					attributes.getValue(TemplateTags.ATTR_TARGET_OWNER),
+					attributes.getValue(TemplateTags.ATTR_TARGET),
+					attributes.getValue(TemplateTags.ATTR_SYNONYM_OBJECT_OWNER),
+					attributes.getValue(TemplateTags.ATTR_SYNONYM_OBJECT),
+					attributes.getValue(TemplateTags.ATTR_SYNONYM_OBJECT_TARGET_OWNER),
+					attributes.getValue(TemplateTags.ATTR_SYNONYM_OBJECT_TARGET));
 		} else if (TemplateTags.TAG_VIEW.equals(qName)) {
 			config.addExpViewCfg(attributes.getValue(TemplateTags.ATTR_OWNER),
 					attributes.getValue(TemplateTags.ATTR_NAME),
@@ -750,6 +773,8 @@ public final class MigrationTemplateHandler extends
 			parseTargetIndex(attr);
 		} else if (TemplateTags.TAG_SEQUENCE.equals(qName)) {
 			parseTargetSequence(attr);
+		} else if (TemplateTags.TAG_SYNONYM.equals(qName)) {
+			parseTargetSynonym(attr);
 		} else if (TemplateTags.TAG_VIEW.equals(qName)) {
 			parseTargetView(attr);
 		} else if (TemplateTags.TAG_VIEWCOLUMN.equals(qName)) {
