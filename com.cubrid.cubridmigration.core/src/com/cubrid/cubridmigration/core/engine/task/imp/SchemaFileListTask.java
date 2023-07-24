@@ -123,6 +123,14 @@ public class SchemaFileListTask extends ImportTask {
 					sb.append(lineSeparator);
 				}
 				
+				// grant
+				String grantFileRepository = config.getTargetGrantFileName(schemaName);
+				if (checkFileRepository(grantFileRepository)) {
+					isCreateSchemaListFile = true;
+					sb.append(getFileName(grantFileRepository));
+					sb.append(lineSeparator);
+				}
+				
 				if (isCreateSchemaListFile) {
 					os = new BufferedOutputStream(new FileOutputStream(schemaFileListFile, true));
 					os.write(sb.toString().getBytes());
