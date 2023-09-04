@@ -366,6 +366,7 @@ public class SelectDestinationPage extends
 	 */
 	private class OnlineTargetDBView extends
 			AbstractDestinationView {
+		private final int USERSCHEMA_VERSION = 112;
 		private final JDBCConnectionMgrView conMgrView;
 
 		private Button btnWriteErrorRecords;
@@ -463,9 +464,7 @@ public class SelectDestinationPage extends
 			
 			int targetCubridVersion = (catalog.getVersion().getDbMajorVersion() * 10) + (catalog.getVersion().getDbMinorVersion());
 			config.setTargetDBVersion(String.valueOf(targetCubridVersion));
-			if (targetCubridVersion >= 112) {
-				config.setAddUserSchema(catalog.isDBAGroup());
-			}
+			config.setAddUserSchema(targetCubridVersion >= USERSCHEMA_VERSION);
 			
 			
 			if (null != catalog) {
