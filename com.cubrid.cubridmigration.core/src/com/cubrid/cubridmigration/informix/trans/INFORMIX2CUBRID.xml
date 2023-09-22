@@ -451,7 +451,7 @@
 			<scale></scale>
 		</SourceDataType>
 		<TargetDataType>
-			<type>bigint</type>
+			<type>int</type>
 			<precision></precision>
 			<scale></scale>
 		</TargetDataType>
