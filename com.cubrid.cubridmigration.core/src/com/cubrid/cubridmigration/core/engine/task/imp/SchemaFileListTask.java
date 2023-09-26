@@ -99,14 +99,6 @@ public class SchemaFileListTask extends ImportTask {
 					sb.append(lineSeparator);
 				}
 				
-				// view query specification
-				String viewQuerySpecFileRepository = config.getTargetViewQuerySpecFileName(schemaName);
-				if (checkFileRepository(viewQuerySpecFileRepository)) {
-					isCreateSchemaListFile = true;
-					sb.append(getFileName(viewQuerySpecFileRepository));
-					sb.append(lineSeparator);
-				}
-				
 				// serial
 				String serialFileRepository = config.getTargetSerialFileName(schemaName);
 				if (checkFileRepository(serialFileRepository)) {
@@ -136,6 +128,14 @@ public class SchemaFileListTask extends ImportTask {
 				if (checkFileRepository(grantFileRepository)) {
 					isCreateSchemaListFile = true;
 					sb.append(getFileName(grantFileRepository));
+					sb.append(lineSeparator);
+				}
+
+				// view query specification
+				String viewQuerySpecFileRepository = config.getTargetViewQuerySpecFileName(schemaName);
+				if (checkFileRepository(viewQuerySpecFileRepository)) {
+					isCreateSchemaListFile = true;
+					sb.append(getFileName(viewQuerySpecFileRepository));
 					sb.append(lineSeparator);
 				}
 				
