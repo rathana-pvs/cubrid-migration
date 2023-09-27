@@ -331,28 +331,36 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		Catalog targetCatalog = wizard.getTargetCatalog();
 		Catalog sourceCatalog = wizard.getOriginalSourceCatalog();
 		
-		List<Schema> targetSchemaList = targetCatalog.getSchemas();
-		List<Schema> sourceSchemaList = sourceCatalog.getSchemas();
-
-		tarSchemaNameList = new ArrayList<String>();
 		ArrayList<String> dropDownSchemaList = new ArrayList<String>();
+		tarSchemaNameList = new ArrayList<String>();
 		
-		for (Schema schema : targetSchemaList) {
-			tarSchemaNameList.add(schema.getName());
-			dropDownSchemaList.add(schema.getName());
-		}
-		
-		for (Schema schema : sourceSchemaList) {
-			if (tarSchemaNameList.contains(schema.getName().toUpperCase())) {
-				continue;
-			}
+		if (targetCatalog.isDbHasUserSchema()) {
+			List<Schema> targetSchemaList = targetCatalog.getSchemas();
 			
-			dropDownSchemaList.add(schema.getName());
+			for (Schema schema : targetSchemaList) {
+				tarSchemaNameList.add(schema.getName());
+				dropDownSchemaList.add(schema.getName());
+			}
+		} else {
+			tarSchemaNameList.add(targetCatalog.getConnectionParameters().getConUser());
 		}
 		
+		if (sourceCatalog.isDbHasUserSchema()) {
+			List<Schema> sourceSchemaList = sourceCatalog.getSchemas();
+			
+			for (Schema schema : sourceSchemaList) {
+				if (tarSchemaNameList.contains(schema.getName().toUpperCase())) {
+					continue;
+				}
+				
+				dropDownSchemaList.add(schema.getName());
+			}
+		} else {
+			tarSchemaNameList.add(sourceCatalog.getConnectionParameters().getConUser());
+		}
+
 		if (targetCatalog.isDBAGroup()) {
 			tarSchemaNameArray = dropDownSchemaList.toArray(new String[] {});
-			
 		} else {
 			tarSchemaNameArray = new String[] {targetCatalog.getConnectionParameters().getConUser()};
 		}
@@ -401,6 +409,10 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			
 			@Override
 			public boolean canModify(Object element, String property) {
+				if (!tarCatalog.isDbHasUserSchema()) {
+					return false;
+				}
+				
 				if (property.equals(propertyList[4]) || property.equals(propertyList[0])) {
 					return true;
 				} else {
@@ -570,11 +582,17 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		tarSchemaList = tarCatalog.getSchemas();
 		
 		Map<String, Schema> scriptSchemaMap = config.getScriptSchemaMapping();
-		
+
 		for (Schema schema : srcSchemaList) {
 			SrcTable srcTable = new SrcTable();
 			srcTable.setSrcDBType(srcCatalog.getDatabaseType().getName());
-			srcTable.setSrcSchema(schema.getName());
+			
+			if (srcCatalog.isDbHasUserSchema()) {
+				srcTable.setSrcSchema(schema.getName());
+			} else {
+				srcTable.setSrcSchema(srcCatalog.getConnectionParameters().getConUser());
+			}
+			
 			srcTable.setNote(schema.isGrantorSchema());
 			
 			if (!schema.isGrantorSchema()) {
@@ -607,7 +625,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				if (tarCatalog.isDBAGroup() && version >= 112) {
 					srcTable.setTarSchema(srcTable.getSrcSchema());
 				} else {
-					srcTable.setTarSchema(tarCatalog.getSchemas().get(0).getName());
+					srcTable.setTarSchema(tarCatalog.getConnectionParameters().getConUser());
 				}
 			}
 		}
