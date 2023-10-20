@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PageChangedEvent;
@@ -285,7 +286,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			
 			@Override
 			public void addListener(ILabelProviderListener listener) {}
-			
 		});
 		
 		srcTableViewer.setColumnProperties(propertyList);
@@ -547,7 +547,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				
 			} else {
 				if (config.isAddUserSchema()) {
-					srcTable.setTarSchema(Messages.msgTypeSchema);
+					srcTable.setTarSchema(srcTable.getSrcSchema());
 				} else {
 					srcTable.setTarSchema(srcTable.getSrcSchema());
 				}
@@ -559,7 +559,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		setOnlineData();
 		getSchemaValues();
 		setOnlineEditor();
-		
 	}
 	
 	private void setOnlineData() {
@@ -615,29 +614,29 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	
 	@Override
 	protected void afterShowCurrentPage(PageChangedEvent event) {
-		// TODO need reset when select different target connection
 		wizard = getMigrationWizard();
 		config = wizard.getMigrationConfig();
-
-		if (firstVisible) {
-			setTitle(wizard.getStepNoMsg(this) + Messages.schemaMappingPageTitle);
-			if ((config.targetIsOnline() && !wizard.getTargetCatalog().isDBAGroup())
-					|| (!config.targetIsOnline()) && !config.isAddUserSchema()) {
-				setDescription(Messages.schemaMappingPageDescriptionUncorrectable);
-			} else {
-				setDescription(Messages.schemaMappingPageDescription);				
-			}
-			
-			if (!config.targetIsOnline()) {
-				setOfflineSchemaMappingPage();
-			} else {
-				setOnlineSchemaMappingPage();
-			}
-			
-			srcTableViewer.setInput(srcTableList);
-			
-			firstVisible = false;
+		
+		if (srcTableList != null) {
+			srcTableList.clear();
 		}
+		
+		setTitle(wizard.getStepNoMsg(this) + Messages.schemaMappingPageTitle);
+		if ((config.targetIsOnline() && !wizard.getTargetCatalog().isDBAGroup())
+				|| (!config.targetIsOnline()) && !config.isAddUserSchema()) {
+			setDescription(Messages.schemaMappingPageDescriptionUncorrectable);
+		} else {
+			setDescription(Messages.schemaMappingPageDescription);
+		}
+		
+		if (!config.targetIsOnline()) {
+			setOfflineSchemaMappingPage();
+		} else {
+			setOnlineSchemaMappingPage();
+		}
+		
+		srcTableViewer.setInput(srcTableList);
+		firstVisible = firstVisible ? false : true;
 	}
 	
 	@Override
@@ -675,7 +674,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				continue;
 			}
 			
-			if (srcTable.getTarSchema().isEmpty() || isDefaultMessage(srcTable.getTarSchema())) {
+			if (srcTable.getTarSchema().isEmpty()) {
 				MessageDialog.openError(getShell(), Messages.msgError, Messages.msgErrEmptySchemaName);
 				return false;
 			}
@@ -741,10 +740,10 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		grantFileListFullName = new HashMap<String, String>();
 		
 		for (SrcTable srcTable : srcTableList) {
-			if (addUserSchema && srcTable.isSelected() && (srcTable.getTarSchema().isEmpty() || srcTable.getTarSchema() == null 
-					|| srcTable.getTarSchema().equals(Messages.msgTypeSchema))) {
+			String targetSchemaName = srcTable.getTarSchema();
+			if (addUserSchema && srcTable.isSelected() 
+					&& (targetSchemaName == null || targetSchemaName.isEmpty() || StringUtils.trimToEmpty(targetSchemaName).equals(""))) {
 				MessageDialog.openError(getShell(), Messages.msgError, Messages.msgErrEmptySchemaName);
-				
 				return false;
 			}
 			
@@ -907,15 +906,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				return true;
 			}
 		}
-		return false;
-	}
-	
-	private boolean isDefaultMessage(String enterSchema) {
-		if (enterSchema.equals(Messages.msgDefaultSchema) ||
-				enterSchema.equals(Messages.msgTypeSchema)) {
-			return true;
-		}
-		
 		return false;
 	}
 }
