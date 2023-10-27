@@ -148,12 +148,13 @@ public class LoadFileImporter extends
 		synchronized (lockObj) {
 			MigrationDirAndFilesManager mdfm = mrManager.getDirAndFilesMgr();
 			
-			if (!tableFiles.containsKey(stc.getTargetOwner() + stc.getName())) {
-				tableFiles.put(stc.getTargetOwner() + stc.getName(), new CurrentDataFileInfo(config.getTargetDataFileName(stc.getTargetOwner()), 
-						mdfm.getMergeFilesDir(),config.getTargetFilePrefix(), stc.getTargetOwner(), stc.getName(), config.getDataFileExt()));
+			String schemaName = config.isAddUserSchema() ? stc.getOwner() : config.getSourceConParams().getConUser();
+			if (!tableFiles.containsKey(schemaName + stc.getName())) {
+				tableFiles.put(schemaName + stc.getName(), new CurrentDataFileInfo(config.getTargetDataFileName(schemaName), 
+						mdfm.getMergeFilesDir(), config.getTargetFilePrefix(), schemaName, stc.getName(), config.getDataFileExt()));
 			}
 			
-			CurrentDataFileInfo es = tableFiles.get(stc.getTargetOwner() + stc.getName());
+			CurrentDataFileInfo es = tableFiles.get(schemaName + stc.getName());
 			
 			//If the target file is full. 
 			if (mdfm.isDataFileFull(es.fileTableFullName)) {

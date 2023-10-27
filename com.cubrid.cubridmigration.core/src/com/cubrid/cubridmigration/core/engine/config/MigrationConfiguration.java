@@ -717,6 +717,7 @@ public class MigrationConfiguration {
 					tseq = (Sequence) seq.clone();
 					tseq.setName(sc.getTarget());
 					tseq.setOwner(sc.getTargetOwner());
+					tseq.setSourceOwner(sc.getOwner());
 					tseq.setDDL(cubridddlUtil.getSequenceDDL(tseq, this.addUserSchema));
 					tseq.setComment(seq.getComment());
 				}
@@ -773,6 +774,7 @@ public class MigrationConfiguration {
 					tgrant.setClassOwner(sc.getClassOwner());
 					tgrant.setGrantable(sc.isGrantable());
 					tgrant.setName(tgrant.getName());
+					tgrant.setSourceOwner(sc.getOwner());
 					sc.setTarget(tgrant.getName());
 					tgrant.setDDL(cubridddlUtil.getGrantDDL(tgrant, this.addUserSchema));
 				}
@@ -830,6 +832,7 @@ public class MigrationConfiguration {
 					tsynonym.setOwner(sourceDBSchema.getTargetSchemaName());
 					tsynonym.setObjectOwner(getTargetOwner(schemas, synonym.getObjectOwner()));
 					tsynonym.setDDL(cubridddlUtil.getSynonymDDL(tsynonym, this.addUserSchema));
+					tsynonym.setSourceOwner(sourceDBSchema.getName());
 				}
 				tempSynonyms.add(tsynonym);
 			}
@@ -840,28 +843,35 @@ public class MigrationConfiguration {
 		targetSynonyms.addAll(tempSynonyms);
 	}
 	
-	public void createDumpfile(boolean isSplit) {
-		Iterator<String> keys = scriptSchemaMapping.keySet().iterator();
-		while (keys.hasNext()) {
-			Schema schema = scriptSchemaMapping.get(keys.next());
-			String schemaName = schema.getTargetSchemaName();
-			if (isSplit) {
-				this.addTargetTableFileName(schemaName, getTableFullName(schemaName));
-				this.addTargetViewFileName(schemaName, getViewFullName(schemaName));
-				this.addTargetViewQuerySpecFileName(schemaName, getViewQuerySpecFullName(schemaName));
-				this.addTargetPkFileName(schemaName, getPkFullName(schemaName));
-				this.addTargetFkFileName(schemaName, getFkFullName(schemaName));
-				this.addTargetSerialFileName(schemaName, getSequenceFullName(schemaName));
-				this.addTargetSynonymFileName(schemaName, getSynonymFullName(schemaName));
-				this.addTargetGrantFileName(schemaName, getGrantFullName(schemaName));
-				this.addTargetSchemaFileListName(schemaName, getSchemaFileListFullName(schemaName));
-			} else {
-				this.addTargetSchemaFileName(schemaName, getSchemaFullName(schemaName));
+	public void createDumpfile(boolean isSplit, boolean isAddUserSchema) {
+		if (isAddUserSchema) {
+			Iterator<String> keys = scriptSchemaMapping.keySet().iterator();
+			while (keys.hasNext()) {
+				Schema schema = scriptSchemaMapping.get(keys.next());
+				addTargetObjectFileName(schema.getName(), isSplit);
 			}
-			this.addTargetDataFileName(schemaName, getDataFullName(schemaName));
-			this.addTargetIndexFileName(schemaName, getIndexFullName(schemaName));
-			this.addTargetUpdateStatisticFileName(schemaName, getUpdateStatisticFullName(schemaName));
+		} else {
+			addTargetObjectFileName(this.getSourceConParams().getConUser(), isSplit);
 		}
+	}
+	
+	private void addTargetObjectFileName(String schemaName, boolean isSplit) {
+		if (isSplit) {
+			this.addTargetTableFileName(schemaName, getTableFullName(schemaName));
+			this.addTargetViewFileName(schemaName, getViewFullName(schemaName));
+			this.addTargetViewQuerySpecFileName(schemaName, getViewQuerySpecFullName(schemaName));
+			this.addTargetPkFileName(schemaName, getPkFullName(schemaName));
+			this.addTargetFkFileName(schemaName, getFkFullName(schemaName));
+			this.addTargetSerialFileName(schemaName, getSequenceFullName(schemaName));
+			this.addTargetSynonymFileName(schemaName, getSynonymFullName(schemaName));
+			this.addTargetGrantFileName(schemaName, getGrantFullName(schemaName));
+			this.addTargetSchemaFileListName(schemaName, getSchemaFileListFullName(schemaName));
+		} else {
+			this.addTargetSchemaFileName(schemaName, getSchemaFullName(schemaName));
+		}
+		this.addTargetDataFileName(schemaName, getDataFullName(schemaName));
+		this.addTargetIndexFileName(schemaName, getIndexFullName(schemaName));
+		this.addTargetUpdateStatisticFileName(schemaName, getUpdateStatisticFullName(schemaName));
 	}
 	
 	private String getTargetOwner(List<Schema> schemas, String owner) {
@@ -1375,6 +1385,7 @@ public class MigrationConfiguration {
 					tVw.setName(sc.getTarget());
 					tVw.setOwner(sc.getTargetOwner());
 					tVw.setComment(vw.getComment());
+					tVw.setSourceOwner(sc.getOwner());
 				}
 				tempTarList.add(tVw);
 			}
@@ -1574,21 +1585,32 @@ public class MigrationConfiguration {
 			path2 = path + File.separator;
 		}
 		
-		for (Schema schema : srcCatalog.getSchemas()) {
-			addTargetSchemaFileName(schema.getName(), path2 + targetSchemaFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetTableFileName(schema.getName(), path2 + targetTableFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetViewFileName(schema.getName(), path2 + targetViewFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetViewQuerySpecFileName(schema.getName(), path2 + targetViewQuerySpecFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetPkFileName(schema.getName(), path2 + targetPkFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetFkFileName(schema.getName(), path2 + targetFkFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetDataFileName(schema.getName(), path2 + targetDataFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetIndexFileName(schema.getName(), path2 + targetIndexFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetSerialFileName(schema.getName(), path2 + targetSerialFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetUpdateStatisticFileName(schema.getName(), path2 + targetUpdateStatisticFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetSchemaFileListName(schema.getName(), path2 + targetSchemaFileListName.get(schema.getName().substring(tempPath.length())));
-			addTargetSynonymFileName(schema.getName(), path2 + targetSynonymFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetGrantFileName(schema.getName(), path2 + targetGrantFileName.get(schema.getName().substring(tempPath.length())));
+		if (isAddUserSchema()) {
+			for (Schema schema : srcCatalog.getSchemas()) {
+				mergeTargetFilePath(schema.getName(), tempPath, path2);
+			}
+		} else {
+			mergeTargetFilePath(getSourceConParams().getConUser(), tempPath, path2);
 		}
+	}
+	
+	private void mergeTargetFilePath(String schemaName, String tempPath, String path2) {
+		if (this.splitSchema) {
+			addTargetTableFileName(schemaName, path2 + targetTableFileName.get(schemaName.substring(tempPath.length())));
+			addTargetViewFileName(schemaName, path2 + targetViewFileName.get(schemaName.substring(tempPath.length())));
+			addTargetViewQuerySpecFileName(schemaName, path2 + targetViewQuerySpecFileName.get(schemaName.substring(tempPath.length())));
+			addTargetPkFileName(schemaName, path2 + targetPkFileName.get(schemaName.substring(tempPath.length())));
+			addTargetFkFileName(schemaName, path2 + targetFkFileName.get(schemaName.substring(tempPath.length())));
+			addTargetSerialFileName(schemaName, path2 + targetSerialFileName.get(schemaName.substring(tempPath.length())));
+			addTargetSynonymFileName(schemaName, path2 + targetSynonymFileName.get(schemaName.substring(tempPath.length())));
+			addTargetGrantFileName(schemaName, path2 + targetGrantFileName.get(schemaName.substring(tempPath.length())));
+			addTargetSchemaFileListName(schemaName, path2 + targetSchemaFileListName.get(schemaName.substring(tempPath.length())));
+		} else {
+			addTargetSchemaFileName(schemaName, path2 + targetSchemaFileName.get(schemaName.substring(tempPath.length())));
+		}
+		addTargetDataFileName(schemaName, path2 + targetDataFileName.get(schemaName.substring(tempPath.length())));
+		addTargetIndexFileName(schemaName, path2 + targetIndexFileName.get(schemaName.substring(tempPath.length())));
+		addTargetUpdateStatisticFileName(schemaName, path2 + targetUpdateStatisticFileName.get(schemaName.substring(tempPath.length())));
 	}
 
 	/**
@@ -2847,6 +2869,10 @@ public class MigrationConfiguration {
 
 	public void setTargetSchemaList(List<Schema> targetSchemaList) {
 		this.targetSchemaList.addAll(targetSchemaList);
+	}
+	
+	public void removeTargetSchemaList() {
+		this.targetSchemaList.clear();
 	}
 	
 	/**

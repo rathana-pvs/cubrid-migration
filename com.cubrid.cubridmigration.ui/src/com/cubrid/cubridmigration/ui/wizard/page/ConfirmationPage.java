@@ -165,25 +165,32 @@ public class ConfirmationPage extends
 
 			int oldLength;
 			boolean isCreateFileRepository = false;
+			boolean isAddUserSchema = migration.isAddUserSchema();
+			String conUser = migration.getSourceConParams().getConUser();
 			if (migration.isSplitSchema()) {
 				// table
 				text.append(Messages.confrimTable).append(lineSeparator);
 				oldLength = text.length();
+
 				for (Schema targetSchema : migration.getTargetSchemaList()) {
 					for (SourceEntryTableConfig expTable : migration.getExpEntryTableCfg()) {
-						if (expTable.getTargetOwner().equals(targetSchema.getTargetSchemaName()) && expTable.isCreateNewTable()) {
+						if (expTable.getOwner().equals(targetSchema.getName()) && expTable.isCreateNewTable()) {
 							isCreateFileRepository = true;
 							break;
 						}
 					}
-					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetTableFileName(targetSchema.getTargetSchemaName()));
+						text.append(migration.getTargetTableFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
+				
 				if (styleRanges != null) {
 					styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
 							SWTResourceConstents.COLOR_BLUE, null));
@@ -201,7 +208,7 @@ public class ConfirmationPage extends
 				oldLength = text.length();
 				for (Schema targetSchema : migration.getTargetSchemaList()) {
 					for (SourceViewConfig expView : migration.getExpViewCfg()) {
-						if (expView.getTargetOwner().equals(targetSchema.getTargetSchemaName()) && expView.isCreate()) {
+						if (expView.getOwner().equals(targetSchema.getName()) && expView.isCreate()) {
 							isCreateFileRepository = true;
 							break;
 						}
@@ -209,9 +216,13 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetViewFileName(targetSchema.getTargetSchemaName()));
+						text.append(migration.getTargetViewFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
 				if (styleRanges != null) {
@@ -231,7 +242,7 @@ public class ConfirmationPage extends
 				oldLength = text.length();
 				for (Schema targetSchema : migration.getTargetSchemaList()) {
 					for (SourceEntryTableConfig expTable : migration.getExpEntryTableCfg()) {
-						if (expTable.getTargetOwner().equals(targetSchema.getTargetSchemaName()) 
+						if (expTable.getOwner().equals(targetSchema.getName()) 
 								&& expTable.isCreatePK()) {
 							isCreateFileRepository = true;
 							break;
@@ -240,9 +251,13 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetPkFileName(targetSchema.getTargetSchemaName()));
+						text.append(migration.getTargetPkFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
 				if (styleRanges != null) {
@@ -262,7 +277,7 @@ public class ConfirmationPage extends
 				oldLength = text.length();
 				for (Schema targetSchema : migration.getTargetSchemaList()) {
 					for (SourceEntryTableConfig expTable : migration.getExpEntryTableCfg()) {
-						if (expTable.getTargetOwner().equals(targetSchema.getTargetSchemaName()) && 
+						if (expTable.getOwner().equals(targetSchema.getName()) && 
 								expTable.isCreateNewTable() && expTable.getFKConfigList().size() > 0) {
 							isCreateFileRepository = true;
 							break;
@@ -271,9 +286,13 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetFkFileName(targetSchema.getTargetSchemaName()));
+						text.append(migration.getTargetFkFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
 				if (styleRanges != null) {
@@ -293,7 +312,7 @@ public class ConfirmationPage extends
 				oldLength = text.length();
 				for (Schema targetSchema : migration.getTargetSchemaList()) {
 					for (SourceSequenceConfig expSerial : migration.getExpSerialCfg()) {
-						if (expSerial.getTargetOwner().equals(targetSchema.getTargetSchemaName()) 
+						if (expSerial.getOwner().equals(targetSchema.getName()) 
 								&& expSerial.isCreate()) {
 							isCreateFileRepository = true;
 							break;
@@ -302,9 +321,13 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetSerialFileName(targetSchema.getTargetSchemaName()));
+						text.append(migration.getTargetSerialFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
 				if (styleRanges != null) {
@@ -324,7 +347,7 @@ public class ConfirmationPage extends
 				oldLength = text.length();
 				for (Schema targetSchema : migration.getTargetSchemaList()) {
 					for (SourceSynonymConfig expSynonym : migration.getExpSynonymCfg()) {
-						if (expSynonym.getTargetOwner().equals(targetSchema.getTargetSchemaName())
+						if (expSynonym.getOwner().equals(targetSchema.getName())
 								&& expSynonym.isCreate()) {
 							isCreateFileRepository = true;
 							break;
@@ -333,9 +356,13 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetSynonymFileName(targetSchema.getTargetSchemaName()));
+						text.append(migration.getTargetSynonymFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
 				if (styleRanges != null) {
@@ -355,7 +382,7 @@ public class ConfirmationPage extends
 				oldLength = text.length();
 				for (Schema targetSchema : migration.getTargetSchemaList()) {
 					for (SourceGrantConfig expGrant : migration.getExpGrantCfg()) {
-						if (expGrant.getTargetOwner().equals(targetSchema.getTargetSchemaName())
+						if (expGrant.getOwner().equals(targetSchema.getName())
 								&& expGrant.isCreate()) {
 							isCreateFileRepository = true;
 							break;
@@ -364,9 +391,13 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetGrantFileName(targetSchema.getTargetSchemaName()));
+						text.append(migration.getTargetGrantFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
 				if (styleRanges != null) {
@@ -385,7 +416,7 @@ public class ConfirmationPage extends
 				oldLength = text.length();
 				for (Schema targetSchema : migration.getTargetSchemaList()) {
 					for (SourceEntryTableConfig expTable : migration.getExpEntryTableCfg()) {
-						if (expTable.getTargetOwner().equals(targetSchema.getTargetSchemaName())
+						if (expTable.getOwner().equals(targetSchema.getName())
 								&& expTable.isCreateNewTable()) {
 							isCreateFileRepository = true;
 							break;
@@ -394,7 +425,7 @@ public class ConfirmationPage extends
 					
 					for (SourceViewConfig expView : migration.getExpViewCfg()) {
 						if (!isCreateFileRepository 
-								&& expView.getTargetOwner().equals(targetSchema.getTargetSchemaName()) && expView.isCreate()) {
+								&& expView.getOwner().equals(targetSchema.getName()) && expView.isCreate()) {
 							isCreateFileRepository = true;
 							break;
 						}
@@ -402,7 +433,7 @@ public class ConfirmationPage extends
 					
 					for (SourceSequenceConfig expSerial : migration.getExpSerialCfg()) {
 						if (!isCreateFileRepository
-								&& expSerial.getTargetOwner().equals(targetSchema.getTargetSchemaName()) && expSerial.isCreate()) {
+								&& expSerial.getOwner().equals(targetSchema.getName()) && expSerial.isCreate()) {
 							isCreateFileRepository = true;
 							break;
 						}
@@ -410,9 +441,13 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetSchemaFileName(targetSchema.getTargetSchemaName()));
+						text.append(migration.getTargetSchemaFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
 				if (styleRanges != null) {
@@ -432,7 +467,7 @@ public class ConfirmationPage extends
 			oldLength = text.length();
 			for (Schema targetSchema : migration.getTargetSchemaList()) {
 				for (SourceEntryTableConfig expTable : migration.getExpEntryTableCfg()) {
-					if (expTable.getTargetOwner().equals(targetSchema.getTargetSchemaName()) 
+					if (expTable.getOwner().equals(targetSchema.getName()) 
 							&& expTable.isCreateNewTable() && expTable.getIndexConfigList().size() > 0) {
 						isCreateFileRepository = true;
 						break;
@@ -441,9 +476,13 @@ public class ConfirmationPage extends
 				
 				if (isCreateFileRepository) {
 					text.append(tabSeparator).append(tabSeparator);
-					text.append(migration.getTargetIndexFileName(targetSchema.getTargetSchemaName()));
+					text.append(migration.getTargetIndexFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 					text.append(lineSeparator);
 					isCreateFileRepository = false;
+					
+					if (!isAddUserSchema) {
+						break;
+					}
 				}
 			}
 			if (styleRanges != null) {
@@ -466,7 +505,7 @@ public class ConfirmationPage extends
 			} else {
 				for (Schema targetSchema : migration.getTargetSchemaList()) {
 					for (SourceEntryTableConfig expTable : migration.getExpEntryTableCfg()) {
-						if (expTable.getTargetOwner().equals(targetSchema.getTargetSchemaName()) && expTable.isMigrateData()) {
+						if (expTable.getOwner().equals(targetSchema.getName()) && expTable.isMigrateData()) {
 							isCreateFileRepository = true;
 							break;
 						}
@@ -476,7 +515,7 @@ public class ConfirmationPage extends
 						text.append(tabSeparator).append(tabSeparator);
 						if (migration.getDestType() == MigrationConfiguration.DEST_DB_UNLOAD
 								|| migration.getDestType() == MigrationConfiguration.DEST_SQL) {
-							text.append(migration.getTargetDataFileName(targetSchema.getTargetSchemaName()));
+							text.append(migration.getTargetDataFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						} else {
 							text.append(migration.getFileRepositroyPath());
 							text.append(targetSchema.getName()).append(File.separator);
@@ -488,6 +527,10 @@ public class ConfirmationPage extends
 						}
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}	
 			}
@@ -507,7 +550,7 @@ public class ConfirmationPage extends
 			oldLength = text.length();
 			for (Schema targetSchema : migration.getTargetSchemaList()) {
 				for (SourceEntryTableConfig expTable : migration.getExpEntryTableCfg()) {
-					if (expTable.getTargetOwner().equals(targetSchema.getTargetSchemaName()) && expTable.isMigrateData()) {
+					if (expTable.getOwner().equals(targetSchema.getName()) && expTable.isMigrateData()) {
 						isCreateFileRepository = true;
 						break;
 					}
@@ -515,9 +558,13 @@ public class ConfirmationPage extends
 				
 				if (isCreateFileRepository) {
 					text.append(tabSeparator).append(tabSeparator);
-					text.append(migration.getTargetUpdateStatisticFileName(targetSchema.getTargetSchemaName()));
+					text.append(migration.getTargetUpdateStatisticFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 					text.append(lineSeparator);
 					isCreateFileRepository = false;
+					
+					if (!isAddUserSchema) {
+						break;
+					}
 				}
 			}
 			if (styleRanges != null) {

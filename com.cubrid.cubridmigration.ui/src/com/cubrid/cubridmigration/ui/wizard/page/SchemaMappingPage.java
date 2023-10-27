@@ -757,28 +757,32 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			schema.setTargetSchemaName(srcTable.getTarSchema());
 			targetSchemaList.add(schema);
 			
+			String schemaName = config.isAddUserSchema() ? srcTable.getSrcSchema() : srcCatalog.getConnectionParameters().getConUser();
 			if (splitSchema) {
-				tableFullName.put(srcTable.getTarSchema(), config.getTableFullName(srcTable.getTarSchema()));
-				viewFullName.put(srcTable.getTarSchema(), config.getViewFullName(srcTable.getTarSchema()));
-				viewQuerySpecFullName.put(srcTable.getTarSchema(), config.getViewQuerySpecFullName(srcTable.getTarSchema()));
-				pkFullName.put(srcTable.getTarSchema(), config.getPkFullName(srcTable.getTarSchema()));
-				fkFullName.put(srcTable.getTarSchema(), config.getFkFullName(srcTable.getTarSchema()));
-				serialFullName.put(srcTable.getTarSchema(), config.getSequenceFullName(srcTable.getTarSchema()));
-				schemaFileListFullName.put(srcTable.getTarSchema(), config.getSchemaFileListFullName(srcTable.getTarSchema()));
-				synonymFileListFullName.put(srcTable.getTarSchema(), config.getSynonymFullName(srcTable.getTarSchema()));
-				grantFileListFullName.put(srcTable.getTarSchema(), config.getGrantFullName(srcTable.getTarSchema()));
+				tableFullName.put(schemaName, config.getTableFullName(schemaName));
+				viewFullName.put(schemaName, config.getViewFullName(schemaName));
+				viewQuerySpecFullName.put(schemaName, config.getViewQuerySpecFullName(schemaName));
+				pkFullName.put(schemaName, config.getPkFullName(schemaName));
+				fkFullName.put(schemaName, config.getFkFullName(schemaName));
+				serialFullName.put(schemaName, config.getSequenceFullName(schemaName));
+				schemaFileListFullName.put(schemaName, config.getSchemaFileListFullName(schemaName));
+				synonymFileListFullName.put(schemaName, config.getSynonymFullName(schemaName));
+				grantFileListFullName.put(schemaName, config.getGrantFullName(schemaName));
 			} else {
-				schemaFullName.put(srcTable.getTarSchema(), config.getSchemaFullName(srcTable.getTarSchema()));
+				schemaFullName.put(schemaName, config.getSchemaFullName(schemaName));
 			}
-			dataFullName.put(srcTable.getTarSchema(), config.getDataFullName(srcTable.getTarSchema()));
-			indexFullName.put(srcTable.getTarSchema(), config.getIndexFullName(srcTable.getTarSchema()));
-			updateStatisticFullName.put(srcTable.getTarSchema(), config.getUpdateStatisticFullName(srcTable.getTarSchema()));
+			dataFullName.put(schemaName, config.getDataFullName(schemaName));
+			indexFullName.put(schemaName, config.getIndexFullName(schemaName));
+			updateStatisticFullName.put(schemaName, config.getUpdateStatisticFullName(schemaName));
 		}
 		
 		if (!checkFileRepositroy()) {
 			return false;
 		}
 		
+		if (config.getTargetSchemaList().size() > 0) {
+			config.removeTargetSchemaList();
+		}
 		config.setTargetSchemaList(targetSchemaList);
 		config.setTargetSchemaFileName(schemaFullName);
 		config.setTargetTableFileName(tableFullName);
@@ -811,76 +815,19 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	 * @return boolean
 	 */
 	private boolean checkFileRepositroy() {
-		String lineSeparator = System.getProperty("line.separator");
 		StringBuffer buffer = new StringBuffer();
-		try {
+
+		if (config.isAddUserSchema()) {
 			for (SrcTable srcTable : srcTableList) {
 				if (!srcTable.isSelected) {
 					continue;
 				}
-				
-				if (config.isSplitSchema()) {
-					File tableFile = new File(tableFullName.get(srcTable.getTarSchema()));
-					File viewFile = new File(viewFullName.get(srcTable.getTarSchema()));
-					File viewQuerySpecFile = new File(viewQuerySpecFullName.get(srcTable.getTarSchema()));
-					File pkFile = new File(pkFullName.get(srcTable.getTarSchema()));
-					File fkFile = new File(fkFullName.get(srcTable.getTarSchema()));
-					File serialFile = new File(serialFullName.get(srcTable.getTarSchema()));
-					File infoFile = new File(schemaFileListFullName.get(srcTable.getTarSchema()));
-					File synonymFile = new File(synonymFileListFullName.get(srcTable.getTarSchema()));
-					File grantFile = new File(grantFileListFullName.get(srcTable.getTarSchema()));
-					
-					if (tableFile.exists()) {
-						buffer.append(tableFile.getCanonicalPath()).append(lineSeparator);
-					}
-					if (viewFile.exists()) {
-						buffer.append(viewFile.getCanonicalPath()).append(lineSeparator);
-					}
-					if (viewQuerySpecFile.exists()) {
-						buffer.append(viewQuerySpecFile.getCanonicalPath()).append(lineSeparator);
-					}
-					if (pkFile.exists()) {
-						buffer.append(pkFile.getCanonicalPath()).append(lineSeparator);
-					}
-					if (fkFile.exists()) {
-						buffer.append(fkFile.getCanonicalPath()).append(lineSeparator);
-					}
-					if (serialFile.exists()) {
-						buffer.append(serialFile.getCanonicalPath()).append(lineSeparator);
-					}
-					if (infoFile.exists()) {
-						buffer.append(infoFile.getCanonicalPath()).append(lineSeparator);
-					}
-					if (synonymFile.exists()) {
-						buffer.append(synonymFile.getCanonicalPath()).append(lineSeparator);
-					}
-					if (grantFile.exists()) {
-						buffer.append(grantFile.getCanonicalPath()).append(lineSeparator);
-					}
-				} else {
-					File schemaFile = new File(schemaFullName.get(srcTable.getTarSchema()));
-					if (schemaFile.exists()) {
-						buffer.append(schemaFile.getCanonicalPath()).append(lineSeparator);
-					}
-				}
-				
-				File indexFile = new File(indexFullName.get(srcTable.getTarSchema()));
-				File dataFile = new File(dataFullName.get(srcTable.getTarSchema()));
-				File updateStatisticFile = new File(updateStatisticFullName.get(srcTable.getTarSchema()));
-				
-				if (dataFile.exists()) {
-					buffer.append(dataFile.getCanonicalPath()).append(lineSeparator);
-				}
-				if (indexFile.exists()) {
-					buffer.append(indexFile.getCanonicalPath()).append(lineSeparator);
-				}
-				if (updateStatisticFile.exists()) {
-					buffer.append(updateStatisticFile.getCanonicalPath()).append(lineSeparator);
-				}
+				duplicateFilePath(buffer, srcTable.getSrcSchema());
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		} else {
+			duplicateFilePath(buffer, srcCatalog.getConnectionParameters().getConUser());
 		}
+
 		if (buffer.length() > 0) {
 			return MessageDialog.openConfirm(
 					PlatformUI.getWorkbench().getDisplay().getActiveShell(),
@@ -889,6 +836,72 @@ public class SchemaMappingPage extends MigrationWizardPage {
 							+ Messages.confirmMessage);
 		}
 		return true;
+	}
+	
+	private void duplicateFilePath(StringBuffer buffer, String schemaName) {
+		String lineSeparator = System.getProperty("line.separator");
+		try {
+			if (config.isSplitSchema()) {
+				File tableFile = new File(tableFullName.get(schemaName));
+				File viewFile = new File(viewFullName.get(schemaName));
+				File viewQuerySpecFile = new File(viewQuerySpecFullName.get(schemaName));
+				File pkFile = new File(pkFullName.get(schemaName));
+				File fkFile = new File(fkFullName.get(schemaName));
+				File serialFile = new File(serialFullName.get(schemaName));
+				File infoFile = new File(schemaFileListFullName.get(schemaName));
+				File synonymFile = new File(synonymFileListFullName.get(schemaName));
+				File grantFile = new File(grantFileListFullName.get(schemaName));
+				
+				if (tableFile.exists()) {
+					buffer.append(tableFile.getCanonicalPath()).append(lineSeparator);
+				}
+				if (viewFile.exists()) {
+					buffer.append(viewFile.getCanonicalPath()).append(lineSeparator);
+				}
+				if (viewQuerySpecFile.exists()) {
+					buffer.append(viewQuerySpecFile.getCanonicalPath()).append(lineSeparator);
+				}
+				if (pkFile.exists()) {
+					buffer.append(pkFile.getCanonicalPath()).append(lineSeparator);
+				}
+				if (fkFile.exists()) {
+					buffer.append(fkFile.getCanonicalPath()).append(lineSeparator);
+				}
+				if (serialFile.exists()) {
+					buffer.append(serialFile.getCanonicalPath()).append(lineSeparator);
+				}
+				if (infoFile.exists()) {
+					buffer.append(infoFile.getCanonicalPath()).append(lineSeparator);
+				}
+				if (synonymFile.exists()) {
+					buffer.append(synonymFile.getCanonicalPath()).append(lineSeparator);
+				}
+				if (grantFile.exists()) {
+					buffer.append(grantFile.getCanonicalPath()).append(lineSeparator);
+				}
+			} else {
+				File schemaFile = new File(schemaFullName.get(schemaName));
+				if (schemaFile.exists()) {
+					buffer.append(schemaFile.getCanonicalPath()).append(lineSeparator);
+				}
+			}
+			
+			File indexFile = new File(indexFullName.get(schemaName));
+			File dataFile = new File(dataFullName.get(schemaName));
+			File updateStatisticFile = new File(updateStatisticFullName.get(schemaName));
+			
+			if (dataFile.exists()) {
+				buffer.append(dataFile.getCanonicalPath()).append(lineSeparator);
+			}
+			if (indexFile.exists()) {
+				buffer.append(indexFile.getCanonicalPath()).append(lineSeparator);
+			}
+			if (updateStatisticFile.exists()) {
+				buffer.append(updateStatisticFile.getCanonicalPath()).append(lineSeparator);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private boolean isSelectCheckbox() {
