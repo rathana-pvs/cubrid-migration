@@ -38,7 +38,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -160,15 +159,6 @@ public class ShowTextDialog extends TrayDialog {
         }
 
         super.buttonPressed(buttonId);
-    }
-
-    /**
-     * The initial size of dialog
-     *
-     * @return Point
-     */
-    protected Point getInitialSize() {
-        return new Point(650, 500);
     }
 
     /**

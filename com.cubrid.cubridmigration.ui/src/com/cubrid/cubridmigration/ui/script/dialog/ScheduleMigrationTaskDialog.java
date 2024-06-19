@@ -45,7 +45,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -317,15 +316,6 @@ public class ScheduleMigrationTaskDialog extends Dialog {
             MigrationScriptManager.getInstance().save();
         }
         super.buttonPressed(buttonId);
-    }
-
-    /**
-     * The initial size of dialog
-     *
-     * @return Point
-     */
-    protected Point getInitialSize() {
-        return new Point(400, 300);
     }
 
     /**
