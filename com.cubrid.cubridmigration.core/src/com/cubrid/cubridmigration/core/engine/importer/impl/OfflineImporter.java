@@ -718,6 +718,10 @@ public abstract class OfflineImporter extends Importer {
     public void alterView(View view) {
         String viewAlterDDL =
                 CUBRIDSQLHelper.getInstance(null).getViewAlterDDL(view, config.isAddUserSchema());
+        if (viewAlterDDL.equals(CUBRIDSQLHelper.SQL_NULL)) {
+            return;
+        }
+
         view.setAlterDDL(viewAlterDDL);
         executeDDL(
                 viewAlterDDL + "\n",
